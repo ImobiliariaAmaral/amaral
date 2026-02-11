@@ -1,0 +1,112 @@
+</html>
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Imobiliária Amaral</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body data-page="vitrine">
+
+  <header class="topbar" id="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <!-- Troca o src pelo caminho certo do seu arquivo -->
+     <img
+  class="brand-logo"
+  id="brandLogo"
+  src="./assets/file.jpg"
+  data-logo-light="./assets/black.jpg"
+  data-logo-dark="./assets/white.jpg"
+  alt="Imobiliária Amaral "
+/>
+
+      <div class="brand-text">
+        <div class="brand-name">Amaral Imobiliária</div>
+        <div class="creci">CRECI: 48219-J</div>
+      </div>
+    </div>
+
+    <nav class="topbar-actions">
+      <a class="top-link" href="#imoveis">Imóveis</a>
+      <a class="top-link" href="https://wa.me/5514982104567" target="_blank" rel="noopener">WhatsApp</a>
+
+      <button class="theme-btn" id="themeToggle" type="button" aria-label="Alternar tema">
+        <span class="theme-ico" aria-hidden="true">🌙</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- separador azul -->
+  <div class="topbar-sep"></div>
+</header>
+
+<!-- bota um id no seu main/section de imóveis -->
+<main id="imoveis">
+  <!-- seu conteúdo atual -->
+</main>
+
+
+
+  <main class="main">
+    <div class="container">
+
+      <section class="filters" aria-label="Filtros de busca">
+        <div class="field-inline">
+          <label for="fBusca">Busca (bairro ou título)</label>
+          <input id="fBusca" placeholder="Ex: Centro, Casa moderna..."/>
+        </div>
+
+        <div class="field-inline">
+          <label for="fTipo">Tipo</label>
+          <select id="fTipo">
+            <option value="todos">Todos</option>
+            <option value="casa">Casa</option>
+            <option value="apartamento">Apartamento</option>
+            <option value="terreno">Terreno</option>
+            <option value="sitio">Sítio</option>
+            <option value="chacara">Chácara</option>
+          </select>
+        </div>
+
+        <div class="field-inline">
+          <label for="fStatus">Status</label>
+          <select id="fStatus">
+            <option value="todos">Todos</option>
+            <option value="disponivel">Disponível</option>
+            <option value="negociacao">Negociação</option>
+            <option value="vendido">Vendido</option>
+          </select>
+        </div>
+      </section>
+
+      <section id="gridCards" class="grid-cards" aria-label="Lista de imóveis">
+        <!-- JS -->
+      </section>
+
+      <div id="emptyState" class="subtle hidden" style="margin-top:14px; text-align:center;">
+        Nenhum imóvel encontrado com os filtros atuais.
+      </div>
+
+    </div>
+  </main>
+
+  <!-- MODAL IMÓVEL (VITRINE) -->
+  <div class="modal-overlay" id="modalPropOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Detalhes do imóvel">
+      <div class="mhead">
+        <h3>Detalhes do Imóvel</h3>
+        <div class="m-actions">
+          <button class="xclose" data-close-modal="prop" title="Fechar">X</button>
+        </div>
+      </div>
+      <div class="mbody" id="modalPropBody">
+        <!-- JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

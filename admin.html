@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="pt-br" data-theme="light">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Imobiliária Amaral - Painel Administrativo</title>
+  <link rel="stylesheet" href="style.css"/>
+
+  <!-- aplica o tema ANTES de pintar a tela (evita piscada) -->
+  <script>
+    (function () {
+      try {
+        const saved = localStorage.getItem("amaral_theme");
+        if (saved === "dark" || saved === "light") {
+          document.documentElement.setAttribute("data-theme", saved);
+        }
+      } catch {}
+    })();
+  </script>
+</head>
+
+<body data-page="adm">
+
+  <!-- =========================================================
+       HEADER
+  ========================================================== -->
+  <header class="header-adm">
+    <div class="container inner">
+
+      <div class="brand" aria-label=" Imobiliária Amaral">
+        <div class="logo" aria-hidden="true">
+          <!-- Logo branca (aparece no dark) -->
+          <img class="logo-img logo-white" src="assets/white.jpg" alt="Imobiliária Amaral (branca)">
+          <!-- Logo preta (aparece no light) -->
+          <img class="logo-img logo-black" src="assets/black.jpg" alt="Imobiliária Amaral (preta)">
+        </div>
+
+        <div class="txt">
+          <strong>Amaral</strong>
+          <span>Painel Administrativo</span>
+        </div>
+      </div>
+
+      <div class="right">
+        <button type="button" class="btn btn-outline" id="btnTheme" title="Alternar tema">
+          🌙/☀️ Tema
+        </button>
+
+        <a class="btn btn-outline" href="index.html" title="Ver Vitrine">Ver Vitrine</a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- =========================================================
+       MAIN
+  ========================================================== -->
+  <main class="main">
+    <div class="container grid">
+
+      <!-- LISTAGEM / GERENCIAR -->
+      <section class="card card-gerenciar" aria-label="Gerenciar imóveis">
+        <div class="card-head">
+          <div>
+            <h2>Gerenciar Imóveis</h2>
+            <div class="subtle"><span id="countImoveis">0</span> itens</div>
+          </div>
+
+          <button type="button" class="btn btn-primary" id="btnNovoImovel">+ Novo Imóvel</button>
+        </div>
+
+        <div class="card-body">
+          <div class="table-wrap">
+            <table class="table" aria-label="Tabela de imóveis">
+              <thead>
+                <tr>
+                  <th class="cell-thumb">Foto</th>
+                  <th>Título</th>
+                  <th>Bairro/Cidade</th>
+                  <th>Tipo</th>
+                  <th>Valor</th>
+                  <th>Valor M²</th>
+                  <th>Status</th>
+                  <th class="col-actions">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="admTableBody">
+                <!-- JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- DASHBOARD (ADM) - AGORA ALINHADO AO CARD (dentro do container) -->
+      <section class="dash-grid" aria-label="Resumo de imóveis">
+        <article class="dash-card">
+          <div class="dash-num" id="dashTotal">0</div>
+          <div class="dash-label">Total de Imóveis</div>
+        </article>
+
+        <article class="dash-card">
+          <div class="dash-num dash-ok" id="dashDisponiveis">0</div>
+          <div class="dash-label">Disponíveis</div>
+        </article>
+
+        <article class="dash-card">
+          <div class="dash-num dash-warn" id="dashNegociacao">0</div>
+          <div class="dash-label">Em Negociação</div>
+        </article>
+
+        <article class="dash-card">
+          <div class="dash-num dash-bad" id="dashVendidos">0</div>
+          <div class="dash-label">Vendidos</div>
+        </article>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- =========================================================
+       MODAL DO FORM (Cadastro / Edição)
+  ========================================================== -->
+  <div class="modal-overlay" id="modalFormOverlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Cadastro de imóvel">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="modalFormTitle">Novo Imóvel</div>
+          <span class="subtle" id="admModeHint">Modo: <b>Cadastro</b></span>
+        </div>
+
+        <button type="button" class="icon-btn neutral" data-close-modal="form" title="Fechar">✕</button>
+      </div>
+
+      <form class="form" id="admForm" autocomplete="off">
+
+        <div class="section-title">Identificação do anúncio</div>
+
+        <div class="row cols-2">
+          <div class="field">
+            <label for="idAnuncio">ID do anúncio</label>
+            <input id="idAnuncio" name="idAnuncio" placeholder="Ex: AMR-2026-001"/>
+          </div>
+
+          <div class="field">
+            <label for="titulo">Título do anúncio <span class="req">*</span></label>
+            <input id="titulo" name="titulo" placeholder="Ex: Casa moderna com área gourmet" required/>
+          </div>
+        </div>
+
+        <div class="row cols-2">
+          <div class="field">
+            <label for="tipo">Tipo do imóvel</label>
+            <select id="tipo" name="tipo">
+              <option value="casa">Casa</option>
+              <option value="apartamento">Apartamento</option>
+              <option value="terreno">Terreno</option>
+              <option value="sitio">Sítio</option>
+              <option value="chacara">Chácara</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="status">Disponibilidade</label>
+            <select id="status" name="status">
+              <option value="disponivel">Disponível</option>
+              <option value="negociacao">Em negociação</option>
+              <option value="vendido">Vendido</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="sep"/>
+
+        <div class="section-title">Localização</div>
+
+        <div class="row cols-3">
+          <div class="field">
+            <label for="cep">CEP</label>
+            <input id="cep" name="cep" placeholder="00000-000"/>
+            <span class="subtle">Preenche rua/bairro/cidade/UF automaticamente (ViaCEP)</span>
+          </div>
+
+          <div class="field">
+            <label for="rua">Rua / Logradouro</label>
+            <input id="rua" name="rua" placeholder="Rua / Av."/>
+          </div>
+
+          <div class="field">
+            <label for="numero">Número</label>
+            <input id="numero" name="numero" placeholder="Ex: 123"/>
+          </div>
+        </div>
+
+        <div class="row cols-3">
+          <div class="field">
+            <label for="bairro">Bairro</label>
+            <input id="bairro" name="bairro" placeholder="Ex: Centro"/>
+          </div>
+
+          <div class="field">
+            <label for="cidade">Cidade</label>
+            <input id="cidade" name="cidade" placeholder="Ex: Bariri"/>
+          </div>
+
+          <div class="field">
+            <label for="uf">UF</label>
+            <input id="uf" name="uf" placeholder="Ex: SP" maxlength="2"/>
+          </div>
+        </div>
+
+        <div class="row cols-2">
+          <div class="field">
+            <label for="complemento">Complemento</label>
+            <input id="complemento" name="complemento" placeholder="Opcional"/>
+          </div>
+
+          <div class="field">
+            <label>&nbsp;</label>
+            <div class="subtle">Se não houver CEP, preencha manualmente.</div>
+          </div>
+        </div>
+
+        <hr class="sep"/>
+
+        <div class="section-title">Valores e medidas</div>
+
+        <div class="row cols-3">
+          <div class="field">
+            <label for="precoTotal">Preço total (R$)</label>
+            <input id="precoTotal" name="precoTotal" inputmode="decimal" placeholder="Ex: 450000"/>
+          </div>
+
+          <div class="field">
+            <label for="areaTotal">Área total (m²)</label>
+            <input id="areaTotal" name="areaTotal" inputmode="decimal" placeholder="Ex: 450"/>
+          </div>
+
+          <div class="field">
+            <label for="areaConstruida">Área construída (m²)</label>
+            <input id="areaConstruida" name="areaConstruida" inputmode="decimal" placeholder="Ex: 180"/>
+          </div>
+        </div>
+
+        <hr class="sep"/>
+
+        <div class="section-title">Galeria de fotos</div>
+
+        <div class="photo-add">
+          <input id="fotoUrl" placeholder="Cole a URL da foto e clique no +"/>
+          <button type="button" class="btn btn-soft" id="btnAddFoto" title="Adicionar foto">+</button>
+        </div>
+
+        <div class="photo-grid" id="photoGrid"></div>
+
+        <hr class="sep"/>
+
+        <div class="section-title">Estrutura e cômodos</div>
+
+        <div class="row cols-4">
+          <div class="field"><label for="quartos">Quartos</label><input id="quartos" name="quartos" type="number" min="0" value="0"/></div>
+          <div class="field"><label for="suites">Suítes</label><input id="suites" name="suites" type="number" min="0" value="0"/></div>
+          <div class="field"><label for="banheiros">Banheiros</label><input id="banheiros" name="banheiros" type="number" min="0" value="0"/></div>
+          <div class="field"><label for="vagas">Vagas garagem</label><input id="vagas" name="vagas" type="number" min="0" value="0"/></div>
+        </div>
+
+        <div class="row cols-4">
+          <div class="field"><label for="sala">Salas</label><input id="sala" name="sala" type="number" min="0" value="0"/></div>
+          <div class="field"><label for="cozinha">Cozinhas</label><input id="cozinha" name="cozinha" type="number" min="0" value="0"/></div>
+          <div class="field"><label for="areaGourmet">Área gourmet</label><input id="areaGourmet" name="areaGourmet" type="number" min="0" value="0"/></div>
+          <div class="field"><label for="piscina">Piscina</label><input id="piscina" name="piscina" type="number" min="0" value="0"/></div>
+        </div>
+
+        <hr class="sep"/>
+
+        <div class="section-title">Descrição detalhada</div>
+
+        <div class="field">
+          <label for="descricao">Descrição</label>
+          <textarea id="descricao" name="descricao" placeholder="Descreva o imóvel com detalhes..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="btnCancelar">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar Imóvel</button>
+          <button type="button" class="btn btn-success hidden" id="btnEditar">Editar Imóvel</button>
+        </div>
+
+        <input type="hidden" id="editingId" value=""/>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL RELATÓRIO (ADM)
+  ========================================================== -->
+  <div class="modal-overlay" id="modalReportOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Relatório do Imóvel">
+      <div class="mhead">
+        <h3>Relatório do Imóvel</h3>
+        <div class="m-actions">
+          <button class="printbtn" id="btnPrintReport" title="Imprimir">🖨</button>
+          <button class="xclose" data-close-modal="report" title="Fechar">X</button>
+        </div>
+      </div>
+      <div class="mbody" id="modalReportBody"></div>
+    </div>
+  </div>
+
+  <!-- tema: alternar -->
+  <script>
+    (function () {
+      const btn = document.getElementById("btnTheme");
+      if (!btn) return;
+
+      function apply(next) {
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("amaral_theme", next); } catch {}
+      }
+
+      btn.addEventListener("click", () => {
+        const cur = document.documentElement.getAttribute("data-theme") || "light";
+        apply(cur === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+
+  <script src="script.js"></script>
+</body>
+</html>
