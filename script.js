@@ -256,6 +256,11 @@
         areaGourmet: Number(state.areaGourmet) || 0,
         piscina: Number(state.piscina) || 0,
       },
+      proprietario: {
+      nome: (state.propNome || "").trim(),
+      telefone: (state.propTelefone || "").trim(),
+      },
+
       descricao: (state.descricao || "").trim(),
       fotos: fotos.length ? fotos : [PLACEHOLDER_IMG],
       criadoEm: state.criadoEm || now,
@@ -442,7 +447,10 @@
         cozinha: $("#cozinha").value,
         areaGourmet: $("#areaGourmet").value,
         piscina: $("#piscina").value,
-
+        
+        propNome: $("#propNome").value,
+        propTelefone: $("#propTelefone").value,
+  
         descricao: $("#descricao").value,
         fotos: fotosState.slice(),
       };
@@ -474,6 +482,9 @@
       $("#cozinha").value = imv.estrutura?.cozinha ?? 0;
       $("#areaGourmet").value = imv.estrutura?.areaGourmet ?? 0;
       $("#piscina").value = imv.estrutura?.piscina ?? 0;
+
+      $("#propNome").value = imv.proprietario?.nome || "";
+      $("#propTelefone").value = imv.proprietario?.telefone || "";
 
       $("#descricao").value = imv.descricao || "";
 
@@ -550,6 +561,7 @@
           }
 
           if (fotoFiles) fotoFiles.value = "";
+          if (fileName) fileName.textContent = "Nenhum arquivo selecionado";
           renderPhotoGrid();
         } catch (err) {
           console.error(err);
@@ -666,6 +678,14 @@
               <span>${escapeHtml(imv.idAnuncio || "-")}</span>
             </div>
 
+          <div class="drawer-box" style="grid-column:1/-1;">
+            <b>Proprietário</b>
+            <div style="margin-top:6px; display:grid; gap:4px;">
+              <div><b>Nome:</b> ${escapeHtml(imv.proprietario?.nome || "-")}</div>
+              <div><b>Telefone:</b> ${escapeHtml(imv.proprietario?.telefone || "-")}</div>
+            </div>
+          </div>
+  
             <div class="drawer-box">
               <b>Preço total</b>
               <span>${moneyBRL(imv.precoTotal)}</span>
@@ -699,6 +719,15 @@
                 ${fullComodos(imv.estrutura)}
               </div>
             </div>
+             
+            <div class="drawer-box" style="grid-column:1/-1;">
+              <b>Proprietário</b>
+              <div style="margin-top:6px; display:grid; gap:4px;">
+                <div><b>Nome:</b> ${escapeHtml(imv.proprietario?.nome || "-")}</div>
+                <div><b>Telefone:</b> ${escapeHtml(imv.proprietario?.telefone || "-")}</div>
+              </div>
+            </div>
+
 
             <div class="drawer-box" style="grid-column:1/-1;">
               <b>Descrição</b>
@@ -770,9 +799,10 @@
 
           <td>
             <div class="actions">
-              <button class="icon-btn primary" data-action="edit" title="Editar">✏️</button>
-              <button class="icon-btn neutral" data-action="report" title="Relatório">📄</button>
-              <button class="icon-btn danger" data-action="delete" title="Excluir">❌</button>
+            <button class="icon-btn primary" data-action="edit" title="Editar">✏️</button>
+            <button class="icon-btn neutral" data-action="report" title="Relatório">📄</button>
+            <button class="icon-btn neutral" data-action="call" title="Ligar / WhatsApp do proprietário">📞</button>
+            <button class="icon-btn danger" data-action="delete" title="Excluir">❌</button>
             </div>
           </td>
         `;
@@ -908,29 +938,48 @@
       if (!imv) return;
 
       const actionBtn = e.target.closest("button[data-action]");
-      if (actionBtn) {
-        const action = actionBtn.dataset.action;
+if (actionBtn) {
+  const action = actionBtn.dataset.action;
 
-        if (action === "edit") {
-          openFormModal("edit", imv);
-          return;
-        }
+  if (action === "edit") {
+    openFormModal("edit", imv);
+    return;
+  }
 
-        if (action === "report") {
-          openReport(imv);
-          return;
-        }
+  if (action === "report") {
+    openReport(imv);
+    return;
+  }
 
-        if (action === "delete") {
-          const ok = confirm("Tem certeza que deseja excluir este imóvel?");
-          if (!ok) return;
-          await excluirImovel(id);
-          await refreshADM();
-          return;
-        }
+  if (action === "call") {
+    const tel = String(imv.proprietario?.telefone || "").trim();
+    const digits = onlyDigits(tel);
 
-        return;
-      }
+    if (!digits) {
+      alert("Esse imóvel não tem telefone do proprietário cadastrado.");
+      return;
+    }
+
+    if (digits.length >= 10) {
+      window.open(`https://wa.me/55${digits}`, "_blank");
+    } else {
+      window.location.href = `tel:${digits}`;
+    }
+
+    return;
+  }
+
+  if (action === "delete") {
+    const ok = confirm("Tem certeza que deseja excluir este imóvel?");
+    if (!ok) return;
+    await excluirImovel(id);
+    await refreshADM();
+    return;
+  }
+
+  return;
+}
+
 
       toggleDrawer(id);
     });
@@ -1017,12 +1066,12 @@
 
             <div>
               <div class="price">${moneyBRL(imv.precoTotal)}</div>
-              <div class="price-sub">${precoM2 ? `Preço/m²: ${moneyBRL(precoM2)}` : "Preço/m²: -"}</div>
             </div>
 
             <div class="prop-meta">
-              <span>Área total: <b>${imv.areaTotal ? numBR(imv.areaTotal) : "-"}</b> m²</span>
-            </div>
+  <span>Área total: <b>${imv.areaTotal ? numBR(imv.areaTotal) : "-"}</b></span>
+</div>
+
 
             <div class="icons-row">
               <span class="ico">${ICONS.bed} ${Number(imv.estrutura?.quartos || 0)}</span>
@@ -1143,9 +1192,9 @@
             <div class="prop-head-right">
               <div class="prop-price-big">${moneyBRL(imv.precoTotal)}</div>
               <div class="prop-area-lines">
-                <div>${imv.areaConstruida ? `Área construída: <b>${numBR(imv.areaConstruida)} m²</b>` : `Área construída: <b>-</b>`}</div>
-                <div>${imv.areaTotal ? `Área total: <b>${numBR(imv.areaTotal)} m²</b>` : `Área total: <b>-</b>`}</div>
-                <div class="subtle">${precoM2 ? `Preço/m²: ${moneyBRL(precoM2)}` : "Preço/m²: -"}</div>
+                <div>${imv.areaConstruida ? `Área construída: <b>${numBR(imv.areaConstruida)}</b>` : `Área construída: <b>-</b>`}</div>
+                <div>${imv.areaTotal ? `Área total: <b>${numBR(imv.areaTotal)}</b>` : `Área total: <b>-</b>`}</div>
+
               </div>
             </div>
           </div>
