@@ -557,11 +557,58 @@ html[data-theme="dark"] .xclose{ background: rgba(255,255,255,0.08); }
   box-shadow: var(--sombra);
   border-bottom: 1px solid var(--borda);
 }
+.header-vitrine{
+  background: var(--azul-amaral);
+  color: var(--branco);
+  box-shadow: var(--sombra);
+}
+
 .header-vitrine .inner{
-  padding: 18px 0;
   display:flex;
   align-items:center;
-  justify-content:center;
+  justify-content:space-between;
+  padding: 25px 0; /* igual ADM */
+  gap: 14px;
+}
+
+/* reaproveita o mesmo padrão do ADM */
+.header-vitrine .brand{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+}
+
+.header-vitrine .brand .logo{
+  width: 152px;
+  height: 152px;
+  border-radius: 25px;
+  overflow:hidden;
+  display:grid;
+  place-items:center;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.header-vitrine .brand .txt{
+  display:flex;
+  flex-direction:column;
+  line-height:1.05;
+}
+
+.header-vitrine .brand .txt strong{
+  font-size: 25px;
+  letter-spacing:0.2px;
+}
+
+.header-vitrine .brand .txt span{
+  font-size: 16px;
+  opacity:0.95;
+}
+
+.header-vitrine .right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
 }
 
 .brand-center{
@@ -1331,6 +1378,18 @@ html[data-theme="dark"] .theme-btn{
 .theme-btn:hover{
   transform: translateY(-1px);
 }
+.theme-btn{
+  border: 1px solid rgba(255,255,255,0.35);
+}
+html[data-theme="light"] .theme-btn{
+  border: 1px solid rgba(0,0,0,0.18);
+  background: rgba(255,255,255,0.18);
+}
+html[data-theme="dark"] .theme-btn{
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(0,0,0,0.18);
+}
+
 
 /* =========================
    AJUSTES PRA COMBINAR COM TEMA
@@ -1416,53 +1475,48 @@ html[data-theme="dark"] ::placeholder{ color: rgba(229,231,235,0.55); }
 html[data-theme="light"] #modalPropBody .section-title + div{
   background: rgba(0,0,0,0.04);
 }
-/* ==============================
-   Upload Cloudinary (ADM) - layout
-============================== */
-.photo-add {
-  display: grid;
-  grid-template-columns: 1fr auto;
+/* ===== File input bonito (ADM) ===== */
+.file-wrap{
+  flex: 1;
+  display:flex;
+  align-items:center;
   gap: 10px;
-  align-items: center;
-}
-
-.photo-add input[type="file"] {
-  width: 100%;
-  max-width: 100%;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(0,0,0,0.12);
-  background: #fff;
-  overflow: hidden; /* evita “sobras” do botão nativo */
+  border: 1px solid rgba(0,0,0,0.14);
+  background: var(--card);
+}
+html[data-theme="dark"] .file-wrap{
+  border-color: rgba(255,255,255,0.12);
 }
 
-/* deixa o botão “Escolher arquivos” mais alinhado (Chrome/Edge) */
-.photo-add input[type="file"]::file-selector-button {
-  border: 0;
+.file-input{
+  position:absolute;
+  width:1px;
+  height:1px;
+  opacity:0;
+  pointer-events:none;
+}
+
+.file-btn{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
   padding: 10px 12px;
-  margin-right: 12px;
-  border-radius: 10px;
-  background: rgba(26, 71, 123, 0.12);
-  color: #1a477b;
-  font-weight: 700;
-  cursor: pointer;
+  border-radius: 12px;
+  cursor:pointer;
+  font-weight: 900;
+  background: rgba(26,71,123,0.10);
+  color: var(--azul-amaral);
+  border: 1px solid rgba(26,71,123,0.18);
+  user-select:none;
 }
 
-/* hover no botão nativo */
-.photo-add input[type="file"]::file-selector-button:hover {
-  background: rgba(26, 71, 123, 0.18);
-}
-
-/* no tema escuro (se você usa data-theme) */
-html[data-theme="dark"] .photo-add input[type="file"] {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.14);
-  color: rgba(255,255,255,0.9);
-}
-html[data-theme="dark"] .photo-add input[type="file"]::file-selector-button {
-  background: rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.9);
-}
-html[data-theme="dark"] .photo-add input[type="file"]::file-selector-button:hover {
-  background: rgba(255,255,255,0.18);
+.file-name{
+  color: var(--texto-cinza);
+  font-weight: 800;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
