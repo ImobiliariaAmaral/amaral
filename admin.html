@@ -326,5 +326,59 @@
   </script>
 
   <script src="script.js"></script>
+  
+  <!-- 1) Firebase/Firestore (TEM QUE VIR PRIMEIRO) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      setDoc,
+      getDocs,
+      deleteDoc,
+      serverTimestamp,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBAMwdQUgNuHeBuSuhfXYGEAxJbUW4MQCI",
+      authDomain: "imobiliaria-amaral-b3454.firebaseapp.com",
+      projectId: "imobiliaria-amaral-b3454",
+      storageBucket: "imobiliaria-amaral-b3454.firebasestorage.app",
+      messagingSenderId: "338475531000",
+      appId: "1:338475531000:web:c1ada5b16c91b5eb80d90d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colImoveis = collection(db, "imoveis");
+
+    window.DB = {
+      async upsertImovel(imv) {
+        const id = String(imv?.id || "").trim();
+        if (!id) throw new Error("Imóvel sem id");
+
+        const ref = doc(db, "imoveis", id);
+        const payload = { ...imv, __updatedAt: serverTimestamp(), __createdAt: imv.__createdAt || serverTimestamp() };
+        await setDoc(ref, payload, { merge: true });
+        return id;
+      },
+      async deleteImovel(id) {
+        await deleteDoc(doc(db, "imoveis", String(id)));
+      },
+      async listImoveis() {
+        const q = query(colImoveis, orderBy("__updatedAt", "desc"));
+        const snap = await getDocs(q);
+        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
+    };
+
+    console.log("Firebase/Firestore OK ✅");
+  </script>
+
+  <!-- 2) Seu script (DEPOIS do Firebase) -->
+  <script src="./script.js" defer></script>
 </body>
 </html>
