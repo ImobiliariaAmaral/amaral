@@ -501,6 +501,8 @@
       fotosState.forEach((url, idx) => {
         const div = document.createElement("div");
         div.className = "thumb";
+        div.draggable = true;
+        div.dataset.index = idx;
 
         const img = document.createElement("img");
         img.alt = `Foto ${idx + 1}`;
@@ -536,6 +538,35 @@
         photoGrid.appendChild(hint);
       }
     }
+
+    let dragSrcIndex = null;
+
+photoGrid.addEventListener("dragstart", (e) => {
+  const thumb = e.target.closest(".thumb");
+  if (!thumb) return;
+  dragSrcIndex = Number(thumb.dataset.index);
+});
+
+photoGrid.addEventListener("dragover", (e) => {
+  e.preventDefault();
+});
+
+photoGrid.addEventListener("drop", (e) => {
+  e.preventDefault();
+  const thumb = e.target.closest(".thumb");
+  if (!thumb) return;
+
+  const targetIndex = Number(thumb.dataset.index);
+
+  if (dragSrcIndex === null || dragSrcIndex === targetIndex) return;
+
+  const moved = fotosState.splice(dragSrcIndex, 1)[0];
+  fotosState.splice(targetIndex, 0, moved);
+
+  renderPhotoGrid();
+  dragSrcIndex = null;
+});
+
 
     // >>>> Upload pro Cloudinary (novo)
     if (btnUploadFotos) {
