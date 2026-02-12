@@ -42,9 +42,10 @@
       </div>
 
       <div class="right">
-        <button type="button" class="btn btn-outline" id="btnTheme" title="Alternar tema">
-          🌙/☀️ Tema
-        </button>
+       <button class="theme-btn" id="btnTheme" type="button" aria-label="Alternar tema" title="Alternar tema">
+  <span class="theme-ico" aria-hidden="true">🌙</span>
+</button>
+
 
         <a class="btn btn-outline" href="index.html" title="Ver Vitrine">Ver Vitrine</a>
       </div>
@@ -247,17 +248,17 @@
       <div class="section-title">Galeria de fotos</div>
 
       <div class="photo-add">
-        <input
-          id="fotoFiles"
-          type="file"
-          accept="image/*"
-          multiple
-          aria-label="Selecionar fotos"
-        />
+        <div class="file-wrap">
+          <input id="fotoFiles" class="file-input" type="file" accept="image/*" multiple />
+          <label for="fotoFiles" class="file-btn">📷 Escolher fotos</label>
+          <span class="file-name" id="fileName">Nenhum arquivo selecionado</span>
+        </div>
+
         <button type="button" class="btn btn-soft" id="btnUploadFotos" title="Enviar fotos">
           Enviar
         </button>
       </div>
+
 
       <div class="subtle" id="uploadHint" style="margin-top:6px;">
         Selecione 1 ou mais fotos e clique em “Enviar”. A 1ª vira a capa.
@@ -282,7 +283,24 @@
           <div class="field"><label for="areaGourmet">Área gourmet</label><input id="areaGourmet" name="areaGourmet" type="number" min="0" value="0"/></div>
           <div class="field"><label for="piscina">Piscina</label><input id="piscina" name="piscina" type="number" min="0" value="0"/></div>
         </div>
+        
+         <hr class="sep"/>
 
+<div class="section-title">Proprietário (contato)</div>
+
+<div class="row cols-2">
+  <div class="field">
+    <label for="propNome">Nome completo do proprietário</label>
+    <input id="propNome" name="propNome" placeholder="Ex: João da Silva"/>
+  </div>
+
+  <div class="field">
+    <label for="propTelefone">Telefone do proprietário</label>
+    <input id="propTelefone" name="propTelefone" placeholder="Ex: (14) 99999-9999" inputmode="tel"/>
+    <span class="subtle">Esse telefone aparece no botão de ligação nas ações.</span>
+  </div>
+</div>
+ 
         <hr class="sep"/>
 
         <div class="section-title">Descrição detalhada</div>
@@ -321,21 +339,31 @@
 
   <!-- tema: alternar -->
   <script>
-    (function () {
-      const btn = document.getElementById("btnTheme");
-      if (!btn) return;
+  (function () {
+    const btn = document.getElementById("btnTheme");
+    if (!btn) return;
 
-      function apply(next) {
-        document.documentElement.setAttribute("data-theme", next);
-        try { localStorage.setItem("amaral_theme", next); } catch {}
-      }
+    function apply(next) {
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("amaral_theme", next); } catch {}
 
-      btn.addEventListener("click", () => {
-        const cur = document.documentElement.getAttribute("data-theme") || "light";
-        apply(cur === "dark" ? "light" : "dark");
-      });
-    })();
-  </script>
+      // atualiza ícone no botão quadradinho
+      const ico = btn.querySelector(".theme-ico");
+      if (ico) ico.textContent = next === "dark" ? "☀️" : "🌙";
+    }
+
+    // garante ícone certo ao abrir
+    const saved = localStorage.getItem("amaral_theme");
+    const initial = (saved === "dark" || saved === "light") ? saved : "light";
+    apply(initial);
+
+    btn.addEventListener("click", () => {
+      const cur = document.documentElement.getAttribute("data-theme") || "light";
+      apply(cur === "dark" ? "light" : "dark");
+    });
+  })();
+</script>
+
   
   <!-- 1) Firebase/Firestore (TEM QUE VIR PRIMEIRO) -->
   <script type="module">
