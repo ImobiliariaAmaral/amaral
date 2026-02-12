@@ -1,4 +1,3 @@
-</html>
 <!doctype html>
 <html lang="pt-br">
 <head>
@@ -7,47 +6,45 @@
   <title>Imobiliária Amaral</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
+
 <body data-page="vitrine">
 
-  <header class="topbar" id="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <!-- Troca o src pelo caminho certo do seu arquivo -->
-     <img
-  class="brand-logo"
-  id="brandLogo"
-  src="./assets/file.jpg"
-  data-logo-light="./assets/black.jpg"
-  data-logo-dark="./assets/white.jpg"
-  alt="Imobiliária Amaral "
-/>
+  <!-- HEADER DA VITRINE (NÃO misturar com header-adm) -->
+  <header class="header-vitrine">
+    <div class="container inner">
 
-      <div class="brand-text">
-        <div class="brand-name">Amaral Imobiliária</div>
-        <div class="creci">CRECI: 48219-J</div>
+      <div class="brand" aria-label="Imobiliária Amaral">
+        <div class="logo" aria-hidden="true">
+          <!-- ESTE ID é usado pelo seu script.js (applyLogo) -->
+          <img
+            id="brandLogo"
+            class="logo-img"
+            src="assets/black.jpg"
+            data-logo-light="assets/black.jpg"
+            data-logo-dark="assets/white.jpg"
+            alt="Imobiliária Amaral"
+          >
+        </div>
+
+        <div class="txt">
+          <strong>Amaral Imobiliária</strong>
+          <span>CRECI: 48219-J</span>
+        </div>
       </div>
+
+      <div class="right">
+        <a class="btn btn-outline" href="https://wa.me/5514982104567" target="_blank" rel="noopener" title="WhatsApp">
+          WhatsApp
+        </a>
+
+        <!-- mantém id themeToggle (seu script.js usa isso) -->
+        <button class="theme-btn" id="themeToggle" type="button" aria-label="Alternar tema" title="Alternar tema">
+          <span class="theme-ico" aria-hidden="true">🌙</span>
+        </button>
+      </div>
+
     </div>
-
-    <nav class="topbar-actions">
-      <a class="top-link" href="#imoveis">Imóveis</a>
-      <a class="top-link" href="https://wa.me/5514982104567" target="_blank" rel="noopener">WhatsApp</a>
-
-      <button class="theme-btn" id="themeToggle" type="button" aria-label="Alternar tema">
-        <span class="theme-ico" aria-hidden="true">🌙</span>
-      </button>
-    </nav>
-  </div>
-
-  <!-- separador azul -->
-  <div class="topbar-sep"></div>
-</header>
-
-<!-- bota um id no seu main/section de imóveis -->
-<main id="imoveis">
-  <!-- seu conteúdo atual -->
-</main>
-
-
+  </header>
 
   <main class="main">
     <div class="container">
@@ -106,7 +103,7 @@
       </div>
     </div>
   </div>
-    
+
   <!-- 1) Firebase/Firestore (TEM QUE VIR PRIMEIRO) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
@@ -117,20 +114,17 @@
       setDoc,
       getDocs,
       deleteDoc,
-      serverTimestamp,
-      query,
-      orderBy
+      serverTimestamp
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyAJJ8HzLmXQBFs2KySmIvwCRRXAXLpKZKA",
-  authDomain: "amaral-18894.firebaseapp.com",
-  projectId: "amaral-18894",
-  storageBucket: "amaral-18894.firebasestorage.app",
-  messagingSenderId: "804671458790",
-  appId: "1:804671458790:web:69bb49508ce0ad795da27"
-};
-
+      apiKey: "AIzaSyAJJ8HzLmXQBFs2KySmIvwCRRXAXLpKZKA",
+      authDomain: "amaral-18894.firebaseapp.com",
+      projectId: "amaral-18894",
+      storageBucket: "amaral-18894.firebasestorage.app",
+      messagingSenderId: "804671458790",
+      appId: "1:804671458790:web:69bb49508ce0ad795da27"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -150,10 +144,9 @@
         await deleteDoc(doc(db, "imoveis", String(id)));
       },
       async listImoveis() {
-  const snap = await getDocs(colImoveis);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
+        const snap = await getDocs(colImoveis);
+        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
     };
 
     console.log("Firebase/Firestore OK ✅");
@@ -163,6 +156,3 @@
   <script src="./script.js" defer></script>
 </body>
 </html>
-
-
-
