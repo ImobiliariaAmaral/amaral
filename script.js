@@ -924,7 +924,10 @@ photoGrid.addEventListener("drop", (e) => {
 <body>
   <div class="btns">
     <button class="btn print" onclick="window.print()">Imprimir</button>
-    <button class="btn close" onclick="window.close()">Fechar</button>
+    <button class="btn close" onclick="window.location.href='adm.html'">
+  Voltar
+</button>
+
   </div>
 
   <div class="page">
