@@ -122,6 +122,7 @@
       localStorage.removeItem(STORAGE_KEY_OLD);
     }
   }
+console.count("script.js carregou");
 
   /* =========================================================
      FIRESTORE: FUNÇÕES OBRIGATÓRIAS (substitui localStorage)
@@ -1206,3 +1207,4 @@
   window.excluirImovel = excluirImovel;
   window.calcularPrecoPorM2 = calcularPrecoPorM2;
 })();
+
