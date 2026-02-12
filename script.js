@@ -820,40 +820,154 @@
     }
 
     function openReport(imv) {
-      const capa = cloudFull(getCapa(imv), 1400);
-      const local = `${imv.local?.bairro || "-"}, ${imv.local?.cidade || "-"} - ${(imv.local?.uf || "-").toUpperCase()}`;
-      const precoM2 = calcularPrecoPorM2(imv.precoTotal, imv.areaTotal);
+  // abre o “Word” em outra aba/janela (sem fotos)
+  const precoM2 = calcularPrecoPorM2(imv.precoTotal, imv.areaTotal);
 
-      reportBody.innerHTML = `
-        <div class="report-hero"><img alt="Capa" src="${capa}"></div>
+  const localTxt = `${imv.local?.bairro || "-"}, ${imv.local?.cidade || "-"} - ${String(imv.local?.uf || "-").toUpperCase()}`;
+  const enderecoTxt = [
+    `CEP: ${imv.local?.cep || "-"}`,
+    `Rua: ${imv.local?.rua || "-"}`,
+    `Nº: ${imv.local?.numero || "-"}`,
+    `Bairro: ${imv.local?.bairro || "-"}`,
+    `Cidade: ${imv.local?.cidade || "-"}`,
+    `UF: ${String(imv.local?.uf || "-").toUpperCase()}`,
+    imv.local?.complemento ? `Compl.: ${imv.local.complemento}` : null,
+  ].filter(Boolean).join(" • ");
 
-        <div class="subtle">Título</div>
-        <div style="font-size:18px; font-weight:1100;">${escapeHtml(imv.titulo || "(Sem título)")}</div>
-        <div class="subtle" style="margin-top:4px;">Localização: <b>${escapeHtml(local)}</b></div>
+  const e = imv.estrutura || {};
+  const estruturaTxt = [
+    `Quartos: ${Number(e.quartos || 0)}`,
+    `Suítes: ${Number(e.suites || 0)}`,
+    `Banheiros: ${Number(e.banheiros || 0)}`,
+    `Vagas: ${Number(e.vagas || 0)}`,
+    `Salas: ${Number(e.sala || 0)}`,
+    `Cozinhas: ${Number(e.cozinha || 0)}`,
+    `Área gourmet: ${Number(e.areaGourmet || 0)}`,
+    `Piscina: ${Number(e.piscina || 0)}`,
+  ].join(" • ");
 
-        <div class="highlight" style="margin-top:12px;">
-          <div class="big">${moneyBRL(imv.precoTotal)}</div>
-          <div class="small">${precoM2 ? `Preço/m²: ${moneyBRL(precoM2)}` : "Preço/m²: -"}</div>
+  const p = imv.proprietario || {};
+  const dataEmissao = new Date().toLocaleString("pt-BR");
+
+  const html = `<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Relatório do Imóvel</title>
+<style>
+  :root{ --ink:#111; --muted:#555; --line:#ddd; }
+  body{ margin:0; font-family: Arial, Helvetica, sans-serif; color:var(--ink); background:#f3f4f6; }
+  .page{
+    width: 210mm; min-height: 297mm;
+    margin: 18px auto; background:#fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    padding: 18mm 16mm; box-sizing:border-box;
+  }
+  .top{ display:flex; justify-content:space-between; gap:16px; border-bottom:2px solid var(--line); padding-bottom:12px; margin-bottom:14px; }
+  .brand h1{ margin:0; font-size:18px; }
+  .brand .sub{ margin-top:4px; font-size:12px; color:var(--muted); }
+  .meta{ text-align:right; font-size:12px; color:var(--muted); }
+  .title{ font-size:20px; margin:10px 0 4px; font-weight:800; }
+  .loc{ color:var(--muted); font-size:13px; margin-bottom:12px; }
+  .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .box{ border:1px solid var(--line); border-radius:10px; padding:10px; }
+  .box b{ display:block; font-size:12px; color:var(--muted); margin-bottom:4px; }
+  .box .v{ font-size:14px; font-weight:700; }
+  .full{ grid-column: 1 / -1; }
+  .section{ margin-top:12px; }
+  .section h2{ margin:0 0 8px; font-size:14px; color:var(--muted); letter-spacing:.2px; text-transform:uppercase; }
+  .text{ border:1px solid var(--line); border-radius:10px; padding:10px; white-space:pre-wrap; line-height:1.45; }
+  .footer{ margin-top:16px; padding-top:10px; border-top:1px solid var(--line); display:flex; justify-content:space-between; font-size:12px; color:var(--muted); }
+  .btns{ position: fixed; right: 18px; top: 18px; display:flex; gap:8px; }
+  .btn{ cursor:pointer; border:0; border-radius:10px; padding:10px 12px; font-weight:700; }
+  .btn.print{ background:#111; color:#fff; }
+  .btn.close{ background:#fff; color:#111; border:1px solid var(--line); }
+  @media print{
+    body{ background:#fff; }
+    .page{ box-shadow:none; margin:0; width:auto; min-height:auto; padding:12mm; }
+    .btns{ display:none; }
+  }
+</style>
+</head>
+<body>
+  <div class="btns">
+    <button class="btn print" onclick="window.print()">Imprimir</button>
+    <button class="btn close" onclick="window.close()">Fechar</button>
+  </div>
+
+  <div class="page">
+    <div class="top">
+      <div class="brand">
+        <h1>Imobiliária Amaral</h1>
+        <div class="sub">Relatório do imóvel • Emissão: ${escapeHtml(dataEmissao)}</div>
+      </div>
+      <div class="meta">
+        <div><b>ID anúncio:</b> ${escapeHtml(imv.idAnuncio || "-")}</div>
+        <div><b>Status:</b> ${escapeHtml(STATUS_LABEL[imv.status] || imv.status || "-")}</div>
+        <div><b>Tipo:</b> ${escapeHtml(TIPOS_LABEL[imv.tipo] || imv.tipo || "-")}</div>
+      </div>
+    </div>
+
+    <div class="title">${escapeHtml(imv.titulo || "(Sem título)")}</div>
+    <div class="loc">Localização: <b>${escapeHtml(localTxt)}</b></div>
+
+    <div class="grid">
+      <div class="box">
+        <b>Preço total</b>
+        <div class="v">${escapeHtml(moneyBRL(imv.precoTotal))}</div>
+      </div>
+      <div class="box">
+        <b>Preço por m²</b>
+        <div class="v">${precoM2 ? escapeHtml(moneyBRL(precoM2)) : "-"}</div>
+      </div>
+      <div class="box">
+        <b>Área total</b>
+        <div class="v">${imv.areaTotal ? escapeHtml(numBR(imv.areaTotal)) + " m²" : "-"}</div>
+      </div>
+      <div class="box">
+        <b>Área construída</b>
+        <div class="v">${imv.areaConstruida ? escapeHtml(numBR(imv.areaConstruida)) + " m²" : "-"}</div>
+      </div>
+
+      <div class="box full">
+        <b>Endereço</b>
+        <div class="v" style="font-weight:600">${escapeHtml(enderecoTxt)}</div>
+      </div>
+
+      <div class="box full">
+        <b>Estrutura</b>
+        <div class="v" style="font-weight:600">${escapeHtml(estruturaTxt)}</div>
+      </div>
+
+      <div class="box full">
+        <b>Proprietário</b>
+        <div style="margin-top:6px; display:grid; gap:4px;">
+          <div><b>Nome:</b> ${escapeHtml(p.nome || "-")}</div>
+          <div><b>Telefone:</b> ${escapeHtml(p.telefone || "-")}</div>
         </div>
+      </div>
+    </div>
 
-        <div style="margin-top:14px;">
-          <div class="section-title">Descrição</div>
-          <div style="margin-top:8px; white-space:pre-wrap;">
-            ${escapeHtml(imv.descricao || "Sem descrição.")}
-          </div>
-        </div>
+    <div class="section">
+      <h2>Descrição</h2>
+      <div class="text">${escapeHtml(imv.descricao || "Sem descrição.")}</div>
+    </div>
 
-        <div style="margin-top:14px;">
-          <button class="btn btn-primary" id="btnPrintInside">Imprimir Relatório</button>
-        </div>
-      `;
+    <div class="footer">
+      <div>Documento interno • sem fotos</div>
+      <div>${escapeHtml(SOCIAL.instagram || "")}</div>
+    </div>
+  </div>
+</body>
+</html>`;
 
-      reportOverlay.classList.add("open");
-      reportOverlay.setAttribute("aria-hidden", "false");
+  document.open();
+document.write(html);
+document.close();
 
-      const inside = $("#btnPrintInside", reportBody);
-      if (inside) inside.addEventListener("click", () => window.print());
-    }
+}
+
 
     function closeReport() {
       reportOverlay.classList.remove("open");
