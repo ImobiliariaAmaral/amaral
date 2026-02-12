@@ -152,16 +152,17 @@
         await deleteDoc(doc(db, "imoveis", String(id)));
       },
       async listImoveis() {
-        const q = query(colImoveis, orderBy("__updatedAt", "desc"));
-        const snap = await getDocs(q);
-        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      }
+  const snap = await getDocs(colImoveis);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
     };
 
     console.log("Firebase/Firestore OK ✅");
   </script>
 
   <!-- 2) Seu script (DEPOIS do Firebase) -->
-  <script src="./script.js" defer></script>
+  <script src="./script.js"></script>
+
 </body>
 </html>
