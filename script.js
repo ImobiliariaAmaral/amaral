@@ -1143,13 +1143,18 @@ console.count("script.js carregou");
      BOOT
   ========================================================= */
   document.addEventListener("DOMContentLoaded", () => {
-    const page = document.body.dataset.page;
 
-    migrateIfNeeded();
+  // 🔒 trava para impedir inicialização duplicada
+  if (window.__AMARAL_INIT__) return;
+  window.__AMARAL_INIT__ = true;
 
-    if (page === "adm") initADM();
-    if (page === "vitrine") initVitrine();
-  });
+  const page = document.body.dataset.page;
+  migrateIfNeeded();
+
+  if (page === "adm") initADM();
+  if (page === "vitrine") initVitrine();
+});
+
 
   (function themeInit() {
     const KEY = "amaral_theme";
@@ -1207,4 +1212,5 @@ console.count("script.js carregou");
   window.excluirImovel = excluirImovel;
   window.calcularPrecoPorM2 = calcularPrecoPorM2;
 })();
+
 
