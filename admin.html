@@ -244,14 +244,26 @@
 
         <hr class="sep"/>
 
-        <div class="section-title">Galeria de fotos</div>
+      <div class="section-title">Galeria de fotos</div>
 
-        <div class="photo-add">
-          <input id="fotoUrl" placeholder="Cole a URL da foto e clique no +"/>
-          <button type="button" class="btn btn-soft" id="btnAddFoto" title="Adicionar foto">+</button>
-        </div>
+      <div class="photo-add">
+        <input
+          id="fotoFiles"
+          type="file"
+          accept="image/*"
+          multiple
+          aria-label="Selecionar fotos"
+        />
+        <button type="button" class="btn btn-soft" id="btnUploadFotos" title="Enviar fotos">
+          Enviar
+        </button>
+      </div>
 
-        <div class="photo-grid" id="photoGrid"></div>
+      <div class="subtle" id="uploadHint" style="margin-top:6px;">
+        Selecione 1 ou mais fotos e clique em “Enviar”. A 1ª vira a capa.
+      </div>
+
+      <div class="photo-grid" id="photoGrid"></div>
 
         <hr class="sep"/>
 
@@ -381,4 +393,5 @@
   <script src="./script.js" defer></script>
 </body>
 </html>
+
 
