@@ -677,14 +677,6 @@
               <b>ID do anúncio</b>
               <span>${escapeHtml(imv.idAnuncio || "-")}</span>
             </div>
-
-          <div class="drawer-box" style="grid-column:1/-1;">
-            <b>Proprietário</b>
-            <div style="margin-top:6px; display:grid; gap:4px;">
-              <div><b>Nome:</b> ${escapeHtml(imv.proprietario?.nome || "-")}</div>
-              <div><b>Telefone:</b> ${escapeHtml(imv.proprietario?.telefone || "-")}</div>
-            </div>
-          </div>
   
             <div class="drawer-box">
               <b>Preço total</b>
