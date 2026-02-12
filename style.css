@@ -1416,3 +1416,53 @@ html[data-theme="dark"] ::placeholder{ color: rgba(229,231,235,0.55); }
 html[data-theme="light"] #modalPropBody .section-title + div{
   background: rgba(0,0,0,0.04);
 }
+/* ==============================
+   Upload Cloudinary (ADM) - layout
+============================== */
+.photo-add {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.photo-add input[type="file"] {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #fff;
+  overflow: hidden; /* evita “sobras” do botão nativo */
+}
+
+/* deixa o botão “Escolher arquivos” mais alinhado (Chrome/Edge) */
+.photo-add input[type="file"]::file-selector-button {
+  border: 0;
+  padding: 10px 12px;
+  margin-right: 12px;
+  border-radius: 10px;
+  background: rgba(26, 71, 123, 0.12);
+  color: #1a477b;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* hover no botão nativo */
+.photo-add input[type="file"]::file-selector-button:hover {
+  background: rgba(26, 71, 123, 0.18);
+}
+
+/* no tema escuro (se você usa data-theme) */
+html[data-theme="dark"] .photo-add input[type="file"] {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.9);
+}
+html[data-theme="dark"] .photo-add input[type="file"]::file-selector-button {
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.9);
+}
+html[data-theme="dark"] .photo-add input[type="file"]::file-selector-button:hover {
+  background: rgba(255,255,255,0.18);
+}
