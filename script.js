@@ -2,6 +2,7 @@
    Imobiliária Amaral - script.js (ADM + Vitrine)
    - Vanilla JS, sem reload
    - FIRESTORE (Firebase) como banco online
+   - Cloudinary (upload direto no ADM, sem backend)
    ========================================================= */
 
 (() => {
@@ -10,13 +11,24 @@
   /* -----------------------------
      CONFIG / CHAVES / LINKS
   ----------------------------- */
-  // (mantive suas chaves antigas só pra não quebrar nada se você usar debug)
   const STORAGE_KEY_NEW = "amaral_imoveis_v1";
   const STORAGE_KEY_OLD = "meus_imoveis";
 
   const SOCIAL = {
     whatsapp: "https://wa.me/5514982104567",
-    instagram: "https://www.instagram.com/imobiliariaamaralbariri?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
+    instagram:
+      "https://www.instagram.com/imobiliariaamaralbariri?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
+  };
+
+  /* -----------------------------
+     CLOUDINARY (sem backend)
+     - precisa de Upload Preset UNSIGNED
+  ----------------------------- */
+  const CLOUDINARY = {
+    cloudName: "dt2dbpr0o",
+    uploadPreset: "amaral_unsigned",
+
+    folder: "amaral/imoveis",
   };
 
   const PLACEHOLDER_IMG = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
@@ -106,12 +118,50 @@
   }
 
   /* -----------------------------
-     (LOCAL MIGRAÇÃO) - deixei aqui só pra compatibilidade
-     mas AGORA o banco é Firestore.
+     CLOUDINARY HELPERS
+  ----------------------------- */
+  function isCloudinaryUrl(url) {
+    return (
+      typeof url === "string" &&
+      url.includes("res.cloudinary.com") &&
+      url.includes("/image/upload/")
+    );
+  }
+
+  function cloudTransformFromUrl(url, transform) {
+    if (!isCloudinaryUrl(url)) return url;
+    return url.replace("/image/upload/", `/image/upload/${transform}/`);
+  }
+
+  function cloudThumb(url, w = 520, h = 360) {
+    // thumbnail leve p/ cards e grid
+    return cloudTransformFromUrl(url, `f_auto,q_auto,c_fill,g_auto,w_${w},h_${h}`);
+  }
+
+  function cloudFull(url, w = 1400) {
+    // imagem grande p/ modal sem explodir
+    return cloudTransformFromUrl(url, `f_auto,q_auto,c_limit,w_${w}`);
+  }
+
+  async function uploadToCloudinaryUnsigned(file) {
+    const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`;
+
+    const form = new FormData();
+    form.append("file", file);
+    form.append("upload_preset", CLOUDINARY.uploadPreset);
+    if (CLOUDINARY.folder) form.append("folder", CLOUDINARY.folder);
+
+    const resp = await fetch(endpoint, { method: "POST", body: form });
+    if (!resp.ok) throw new Error("Falha no upload (Cloudinary).");
+
+    const data = await resp.json();
+    return data.secure_url; // mantém seu sistema igual: fotos = [url]
+  }
+
+  /* -----------------------------
+     (LOCAL MIGRAÇÃO) - compat
   ----------------------------- */
   function migrateIfNeeded() {
-    // Se você quiser migrar os dados antigos do localStorage pro Firebase,
-    // a gente faz depois. Por enquanto, não mexe aqui.
     const old = localStorage.getItem(STORAGE_KEY_OLD);
     const cur = localStorage.getItem(STORAGE_KEY_NEW);
 
@@ -122,14 +172,17 @@
       localStorage.removeItem(STORAGE_KEY_OLD);
     }
   }
-console.count("script.js carregou");
+
+  console.count("script.js carregou");
 
   /* =========================================================
-     FIRESTORE: FUNÇÕES OBRIGATÓRIAS (substitui localStorage)
+     FIRESTORE: FUNÇÕES OBRIGATÓRIAS
   ========================================================= */
   async function carregarImoveis() {
     if (!window.DB) {
-      console.error("window.DB não existe. Você colou o bloco do Firebase ANTES do script.js no HTML?");
+      console.error(
+        "window.DB não existe. Você colou o bloco do Firebase ANTES do script.js no HTML?"
+      );
       return [];
     }
     try {
@@ -207,7 +260,7 @@ console.count("script.js carregou");
       fotos: fotos.length ? fotos : [PLACEHOLDER_IMG],
       criadoEm: state.criadoEm || now,
       atualizadoEm: now,
-      _capa: capa, // interno
+      _capa: capa,
     };
   }
 
@@ -261,8 +314,9 @@ console.count("script.js carregou");
     const btnCancelar = $("#btnCancelar");
     const editingId = $("#editingId");
 
-    const fotoUrl = $("#fotoUrl");
-    const btnAddFoto = $("#btnAddFoto");
+    // >>>> GALERIA (novo)
+    const fotoFiles = $("#fotoFiles");
+    const btnUploadFotos = $("#btnUploadFotos");
     const photoGrid = $("#photoGrid");
 
     const cepEl = $("#cep");
@@ -355,6 +409,7 @@ console.count("script.js carregou");
       form.reset();
       editingId.value = "";
       fotosState = [];
+      if (fotoFiles) fotoFiles.value = "";
       renderPhotoGrid();
       setMode("create");
     }
@@ -425,6 +480,7 @@ console.count("script.js carregou");
       fotosState = Array.isArray(imv.fotos) ? imv.fotos.slice() : [];
       editingId.value = imv.id;
 
+      if (fotoFiles) fotoFiles.value = "";
       renderPhotoGrid();
       setMode("edit");
     }
@@ -437,7 +493,8 @@ console.count("script.js carregou");
 
         const img = document.createElement("img");
         img.alt = `Foto ${idx + 1}`;
-        img.src = safeUrl(url) || PLACEHOLDER_IMG;
+        const safe = safeUrl(url) || PLACEHOLDER_IMG;
+        img.src = cloudThumb(safe, 260, 180);
 
         const btn = document.createElement("button");
         btn.type = "button";
@@ -469,13 +526,40 @@ console.count("script.js carregou");
       }
     }
 
-    btnAddFoto.addEventListener("click", () => {
-      const url = safeUrl(fotoUrl.value);
-      if (!url) return;
-      fotosState.push(url);
-      fotoUrl.value = "";
-      renderPhotoGrid();
-    });
+    // >>>> Upload pro Cloudinary (novo)
+    if (btnUploadFotos) {
+      btnUploadFotos.addEventListener("click", async () => {
+        const files = fotoFiles?.files ? Array.from(fotoFiles.files) : [];
+        if (!files.length) {
+          alert("Selecione pelo menos 1 foto.");
+          return;
+        }
+
+        btnUploadFotos.disabled = true;
+        const oldText = btnUploadFotos.textContent;
+        btnUploadFotos.textContent = "Enviando...";
+
+        try {
+          for (const f of files) {
+            if (f.size > 10 * 1024 * 1024) {
+              alert(`Arquivo muito grande (máx 10MB): ${f.name}`);
+              continue;
+            }
+            const url = await uploadToCloudinaryUnsigned(f);
+            fotosState.push(url);
+          }
+
+          if (fotoFiles) fotoFiles.value = "";
+          renderPhotoGrid();
+        } catch (err) {
+          console.error(err);
+          alert("Deu erro ao enviar as fotos. Veja o console (F12).");
+        } finally {
+          btnUploadFotos.disabled = false;
+          btnUploadFotos.textContent = oldText;
+        }
+      });
+    }
 
     photoGrid.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-action='removeFoto']");
@@ -657,9 +741,10 @@ console.count("script.js carregou");
         tr.dataset.id = imv.id;
 
         const precoM2 = calcularPrecoPorM2(imv.precoTotal, imv.areaTotal);
+        const capa = cloudThumb(getCapa(imv), 260, 180); // leve no ADM
 
         tr.innerHTML = `
-          <td class="cell-thumb"><img alt="Capa" src="${getCapa(imv)}"></td>
+          <td class="cell-thumb"><img alt="Capa" src="${capa}"></td>
 
           <td>
             <b>${escapeHtml(imv.titulo || "(Sem título)")}</b>
@@ -713,7 +798,7 @@ console.count("script.js carregou");
     }
 
     function openReport(imv) {
-      const capa = getCapa(imv);
+      const capa = cloudFull(getCapa(imv), 1400);
       const local = `${imv.local?.bairro || "-"}, ${imv.local?.cidade || "-"} - ${(imv.local?.uf || "-").toUpperCase()}`;
       const precoM2 = calcularPrecoPorM2(imv.precoTotal, imv.areaTotal);
 
@@ -767,7 +852,7 @@ console.count("script.js carregou");
       closeFormModal();
     });
 
-    // cadastro (submit do form)
+    // cadastro
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -870,7 +955,7 @@ console.count("script.js carregou");
     const propOverlay = $("#modalPropOverlay");
     const propBody = $("#modalPropBody");
 
-    let currentGallery = { fotos: [], idx: 0 };
+    let currentGallery = { fotos: [], thumbs: [], idx: 0 };
     let cacheLista = [];
 
     function statusBadgeClass(status) {
@@ -910,7 +995,7 @@ console.count("script.js carregou");
       emptyState.classList.add("hidden");
 
       lista.forEach((imv) => {
-        const capa = getCapa(imv);
+        const capa = cloudThumb(getCapa(imv), 820, 520);
         const precoM2 = calcularPrecoPorM2(imv.precoTotal, imv.areaTotal);
 
         const card = document.createElement("article");
@@ -1009,7 +1094,13 @@ console.count("script.js carregou");
 
     function openPropModal(imv) {
       const fotos = (Array.isArray(imv.fotos) && imv.fotos.length) ? imv.fotos : [PLACEHOLDER_IMG];
-      currentGallery = { fotos: fotos.map((u) => safeUrl(u) || PLACEHOLDER_IMG), idx: 0 };
+      const safeFotos = fotos.map((u) => safeUrl(u) || PLACEHOLDER_IMG);
+
+      currentGallery = {
+        fotos: safeFotos.map((u) => cloudFull(u, 1600)),
+        thumbs: safeFotos.map((u) => cloudThumb(u, 240, 160)),
+        idx: 0,
+      };
 
       const cidadeUF = `${(imv.local?.cidade || "").trim()} ${(imv.local?.uf || "").trim().toUpperCase()}`.trim();
       const mapQuery = cidadeUF ? cidadeUF.replace(/\s+/g, "-") : "Brasil";
@@ -1030,7 +1121,7 @@ console.count("script.js carregou");
             </div>
 
             <div class="g-thumbs" id="gThumbs">
-              ${currentGallery.fotos.map((u, i) => `
+              ${currentGallery.thumbs.map((u, i) => `
                 <button type="button" class="${i === 0 ? "active" : ""}" data-i="${i}" aria-label="Miniatura ${i+1}">
                   <img alt="Miniatura ${i + 1}" src="${u}">
                 </button>
@@ -1120,7 +1211,6 @@ console.count("script.js carregou");
       if (btn) closePropModal();
     });
 
-    // INIT VITRINE (carrega uma vez)
     (async () => {
       cacheLista = await carregarImoveis();
       renderCards();
@@ -1143,18 +1233,15 @@ console.count("script.js carregou");
      BOOT
   ========================================================= */
   document.addEventListener("DOMContentLoaded", () => {
+    if (window.__AMARAL_INIT__) return;
+    window.__AMARAL_INIT__ = true;
 
-  // 🔒 trava para impedir inicialização duplicada
-  if (window.__AMARAL_INIT__) return;
-  window.__AMARAL_INIT__ = true;
+    const page = document.body.dataset.page;
+    migrateIfNeeded();
 
-  const page = document.body.dataset.page;
-  migrateIfNeeded();
-
-  if (page === "adm") initADM();
-  if (page === "vitrine") initVitrine();
-});
-
+    if (page === "adm") initADM();
+    if (page === "vitrine") initVitrine();
+  });
 
   (function themeInit() {
     const KEY = "amaral_theme";
@@ -1212,5 +1299,3 @@ console.count("script.js carregou");
   window.excluirImovel = excluirImovel;
   window.calcularPrecoPorM2 = calcularPrecoPorM2;
 })();
-
-
