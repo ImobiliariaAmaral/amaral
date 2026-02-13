@@ -24,12 +24,12 @@
      CLOUDINARY (sem backend)
      - precisa de Upload Preset UNSIGNED
   ----------------------------- */
-  const CLOUDINARY = {
-    cloudName: "drjkfdwyc",
-    uploadPreset: "imobiliaria_unsigned",
+ const CLOUDINARY = {
+  cloudName: "drjkfdwyc",
+  uploadPreset: "imobiliaria_unsigned",
+  folder: "imobiliaria_amaral/imoveis",
+};
 
-    folder: "amaral/imoveis",
-  };
 
   const PLACEHOLDER_IMG = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750">
@@ -320,9 +320,11 @@
     const editingId = $("#editingId");
 
     // >>>> GALERIA (novo)
-    const fotoFiles = $("#fotoFiles");
-    const btnUploadFotos = $("#btnUploadFotos");
-    const photoGrid = $("#photoGrid");
+   const fotoFiles = $("#fotoFiles");
+   const btnUploadFotos = $("#btnUploadFotos");
+   const photoGrid = $("#photoGrid");
+   const fileName = $("#fileName"); 
+
 
     const cepEl = $("#cep");
 
@@ -1015,7 +1017,11 @@ document.close();
       if (btn) closeReport();
     });
 
-    btnPrintReport.addEventListener("click", () => window.print());
+   if (btnPrintReport) {
+  btnPrintReport.addEventListener("click", () => window.print());
+}
+
+
 
     btnCancelar.addEventListener("click", () => {
       clearForm();
@@ -1488,4 +1494,5 @@ if (actionBtn) {
   window.excluirImovel = excluirImovel;
   window.calcularPrecoPorM2 = calcularPrecoPorM2;
 })();
+
 
