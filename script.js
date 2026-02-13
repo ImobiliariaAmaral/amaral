@@ -25,8 +25,8 @@
      - precisa de Upload Preset UNSIGNED
   ----------------------------- */
   const CLOUDINARY = {
-    cloudName: "dt2dbpr0o",
-    uploadPreset: "amaral_unsigned",
+    cloudName: "drjkfdwyc",
+    uploadPreset: "imobiliaria_unsigned",
 
     folder: "amaral/imoveis",
   };
@@ -1488,3 +1488,4 @@ if (actionBtn) {
   window.excluirImovel = excluirImovel;
   window.calcularPrecoPorM2 = calcularPrecoPorM2;
 })();
+
