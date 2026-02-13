@@ -1167,36 +1167,32 @@ function initVitrine() {
   }
 
   function getFilteredList() {
-    const lista = cacheLista;
+  const lista = cacheLista;
 
-    const q = (fBusca?.value || "").trim().toLowerCase();
-    const tipo = fTipo?.value || "todos";
+  const q = (fBusca?.value || "").trim().toLowerCase();
+  const tipo = fTipo?.value || "todos";
 
-    // "todos" ou um número tipo "300000"
-    const precoMaxStr = (fPreco?.value || "todos");
-    const max = precoMaxStr === "todos" ? Infinity : Number(precoMaxStr);
+  const precoMaxStr = (fPreco?.value || "todos");
+  const max = precoMaxStr === "todos" ? Infinity : Number(precoMaxStr);
 
-    return lista.filter((imv) => {
-      const titulo = (imv.titulo || "").toLowerCase();
-      const bairro = (imv.local?.bairro || "").toLowerCase();
-      const cidade = (imv.local?.cidade || "").toLowerCase();
+  return lista.filter((imv) => {
+    // ✅ VITRINE: só disponíveis
+    if (imv.status !== "disponivel") return false;
 
-      const matchText =
-        !q || titulo.includes(q) || bairro.includes(q) || cidade.includes(q);
+    const titulo = (imv.titulo || "").toLowerCase();
+    const bairro = (imv.local?.bairro || "").toLowerCase();
+    const cidade = (imv.local?.cidade || "").toLowerCase();
 
-      const matchTipo = tipo === "todos" || imv.tipo === tipo;
+    const matchText = !q || titulo.includes(q) || bairro.includes(q) || cidade.includes(q);
+    const matchTipo = tipo === "todos" || imv.tipo === tipo;
 
-      const precoNum = getPrecoNumber(imv);
+    const precoNum = getPrecoNumber(imv);
+    const matchPreco = (max === Infinity) ? true : (precoNum > 0 && precoNum <= max);
 
-      // REGRA:
-      // - Se "Todos": não filtra por preço (mostra até quem tá sem preço)
-      // - Se escolheu faixa: só mostra quem tem preço > 0 e <= max
-      const matchPreco =
-        max === Infinity ? true : precoNum > 0 && precoNum <= max;
+    return matchText && matchTipo && matchPreco;
+  });
+}
 
-      return matchText && matchTipo && matchPreco;
-    });
-  }
 
   function renderCards() {
     const lista = getFilteredList();
