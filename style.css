@@ -1804,3 +1804,9 @@ body[data-page="adm"]{
     height: 46px;
   }
 }
+@media (max-width: 820px){
+  body[data-page="adm"] .table{
+    min-width: 0 !important;
+  }
+}
+
