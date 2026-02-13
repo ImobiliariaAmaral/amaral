@@ -1136,281 +1136,308 @@ if (actionBtn) {
     closeFormModal();
   }
 
-  /* =========================================================
-     VITRINE PAGE
-  ========================================================= */
-  function initVitrine() {
-    const grid = $("#gridCards");
-    const emptyState = $("#emptyState");
+ /* =========================================================
+   VITRINE PAGE
+========================================================= */
+function initVitrine() {
+  const grid = $("#gridCards");
+  const emptyState = $("#emptyState");
 
-    const fBusca = $("#fBusca");
-    const fTipo = $("#fTipo");
-    const fStatus = $("#fStatus");
+  const fBusca = $("#fBusca");
+  const fTipo = $("#fTipo");
+  const fPreco = $("#fPreco"); // ✅ agora existe de verdade
 
-    const propOverlay = $("#modalPropOverlay");
-    const propBody = $("#modalPropBody");
+  const propOverlay = $("#modalPropOverlay");
+  const propBody = $("#modalPropBody");
 
-    let currentGallery = { fotos: [], thumbs: [], idx: 0 };
-    let cacheLista = [];
+  let currentGallery = { fotos: [], thumbs: [], idx: 0 };
+  let cacheLista = [];
 
-    function statusBadgeClass(status) {
-      if (status === "disponivel") return "status-disponivel";
-      if (status === "negociacao") return "status-negociacao";
-      return "status-vendido";
+  function statusBadgeClass(status) {
+    if (status === "disponivel") return "status-disponivel";
+    if (status === "negociacao") return "status-negociacao";
+    return "status-vendido";
+  }
+
+  function getPrecoNumber(imv) {
+    // Firestore pode devolver número, string, null...
+    const raw = imv?.precoTotal;
+    const n = parseNumberSmart(raw);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function getFilteredList() {
+    const lista = cacheLista;
+
+    const q = (fBusca?.value || "").trim().toLowerCase();
+    const tipo = fTipo?.value || "todos";
+
+    // "todos" ou um número tipo "300000"
+    const precoMaxStr = (fPreco?.value || "todos");
+    const max = precoMaxStr === "todos" ? Infinity : Number(precoMaxStr);
+
+    return lista.filter((imv) => {
+      const titulo = (imv.titulo || "").toLowerCase();
+      const bairro = (imv.local?.bairro || "").toLowerCase();
+      const cidade = (imv.local?.cidade || "").toLowerCase();
+
+      const matchText =
+        !q || titulo.includes(q) || bairro.includes(q) || cidade.includes(q);
+
+      const matchTipo = tipo === "todos" || imv.tipo === tipo;
+
+      const precoNum = getPrecoNumber(imv);
+
+      // REGRA:
+      // - Se "Todos": não filtra por preço (mostra até quem tá sem preço)
+      // - Se escolheu faixa: só mostra quem tem preço > 0 e <= max
+      const matchPreco =
+        max === Infinity ? true : precoNum > 0 && precoNum <= max;
+
+      return matchText && matchTipo && matchPreco;
+    });
+  }
+
+  function renderCards() {
+    const lista = getFilteredList();
+    grid.innerHTML = "";
+
+    if (!lista.length) {
+      emptyState.classList.remove("hidden");
+      return;
     }
+    emptyState.classList.add("hidden");
 
-    function getFilteredList() {
-      const lista = cacheLista;
+    lista.forEach((imv) => {
+      const capa = cloudThumb(getCapa(imv), 820, 520);
 
-      const q = (fBusca.value || "").trim().toLowerCase();
-      const tipo = fTipo.value;
-      const status = fStatus.value;
+      const card = document.createElement("article");
+      card.className = "prop-card";
+      card.dataset.id = imv.id;
 
-      return lista.filter((imv) => {
-        const titulo = (imv.titulo || "").toLowerCase();
-        const bairro = (imv.local?.bairro || "").toLowerCase();
-        const cidade = (imv.local?.cidade || "").toLowerCase();
+      card.innerHTML = `
+        <div class="prop-img">
+          <img alt="Capa do imóvel" src="${capa}">
+          <div class="prop-badges">
+            <span class="badge ${statusBadgeClass(imv.status)}">
+              ${STATUS_LABEL[imv.status] || imv.status}
+            </span>
+            <span class="badge tipo">
+              ${TIPOS_LABEL[imv.tipo] || imv.tipo}
+            </span>
+          </div>
+        </div>
 
-        const matchText = !q || titulo.includes(q) || bairro.includes(q) || cidade.includes(q);
-        const matchTipo = tipo === "todos" || imv.tipo === tipo;
-        const matchStatus = status === "todos" || imv.status === status;
+        <div class="prop-body">
+          <div class="prop-title">${escapeHtml(imv.titulo || "(Sem título)")}</div>
+          <div class="prop-loc">${escapeHtml(imv.local?.bairro || "-")}, ${escapeHtml(imv.local?.cidade || "-")}</div>
 
-        return matchText && matchTipo && matchStatus;
-      });
-    }
-
-    function renderCards() {
-      const lista = getFilteredList();
-      grid.innerHTML = "";
-
-      if (!lista.length) {
-        emptyState.classList.remove("hidden");
-        return;
-      }
-      emptyState.classList.add("hidden");
-
-      lista.forEach((imv) => {
-        const capa = cloudThumb(getCapa(imv), 820, 520);
-        const precoM2 = calcularPrecoPorM2(imv.precoTotal, imv.areaTotal);
-
-        const card = document.createElement("article");
-        card.className = "prop-card";
-        card.dataset.id = imv.id;
-
-        card.innerHTML = `
-          <div class="prop-img">
-            <img alt="Capa do imóvel" src="${capa}">
-            <div class="prop-badges">
-              <span class="badge ${statusBadgeClass(imv.status)}">${STATUS_LABEL[imv.status] || imv.status}</span>
-              <span class="badge tipo">${TIPOS_LABEL[imv.tipo] || imv.tipo}</span>
-            </div>
+          <div>
+            <div class="price">${moneyBRL(imv.precoTotal)}</div>
           </div>
 
-          <div class="prop-body">
-            <div class="prop-title">${escapeHtml(imv.titulo || "(Sem título)")}</div>
-            <div class="prop-loc">${escapeHtml(imv.local?.bairro || "-")}, ${escapeHtml(imv.local?.cidade || "-")}</div>
-
-            <div>
-              <div class="price">${moneyBRL(imv.precoTotal)}</div>
-            </div>
-
-            <div class="prop-meta">
-  <span>Área total: <b>${imv.areaTotal ? numBR(imv.areaTotal) : "-"}</b></span>
-</div>
-
-
-            <div class="icons-row">
-              <span class="ico">${ICONS.bed} ${Number(imv.estrutura?.quartos || 0)}</span>
-              <span class="ico">${ICONS.bath} ${Number(imv.estrutura?.banheiros || 0)}</span>
-              <span class="ico">${ICONS.car} ${Number(imv.estrutura?.vagas || 0)}</span>
-            </div>
+          <div class="prop-meta">
+            <span>Área total: <b>${imv.areaTotal ? numBR(imv.areaTotal) : "-"}</b></span>
           </div>
-        `;
 
-        grid.appendChild(card);
-      });
-    }
+          <div class="icons-row">
+            <span class="ico">${ICONS.bed} ${Number(imv.estrutura?.quartos || 0)}</span>
+            <span class="ico">${ICONS.bath} ${Number(imv.estrutura?.banheiros || 0)}</span>
+            <span class="ico">${ICONS.car} ${Number(imv.estrutura?.vagas || 0)}</span>
+          </div>
+        </div>
+      `;
 
-    function estruturaCardsIcons(e = {}) {
-      const items = [
-        ["Quartos", e.quartos ?? 0, "🛏️"],
-        ["Suítes", e.suites ?? 0, "🛏️"],
-        ["Banheiros", e.banheiros ?? 0, "🚿"],
-        ["Vagas", e.vagas ?? 0, "🚗"],
-        ["Salas", e.sala ?? 0, "📺"],
-        ["Cozinhas", e.cozinha ?? 0, "🍽️"],
-        ["Área gourmet", e.areaGourmet ?? 0, "🥂"],
-        ["Piscina", e.piscina ?? 0, "🏊"],
-      ];
+      grid.appendChild(card);
+    });
+  }
 
-      return items
-        .filter(([, v]) => Number(v) > 0)
-        .map(([k, v, icon]) => `
+  function estruturaCardsIcons(e = {}) {
+    const items = [
+      ["Quartos", e.quartos ?? 0, "🛏️"],
+      ["Suítes", e.suites ?? 0, "🛏️"],
+      ["Banheiros", e.banheiros ?? 0, "🚿"],
+      ["Vagas", e.vagas ?? 0, "🚗"],
+      ["Salas", e.sala ?? 0, "📺"],
+      ["Cozinhas", e.cozinha ?? 0, "🍽️"],
+      ["Área gourmet", e.areaGourmet ?? 0, "🥂"],
+      ["Piscina", e.piscina ?? 0, "🏊"],
+    ];
+
+    return items
+      .filter(([, v]) => Number(v) > 0)
+      .map(
+        ([k, v, icon]) => `
           <div class="info-card icon-card">
             <div class="ic">${icon}</div>
             <div class="num">${Number(v) || 0}</div>
             <div class="lbl">${k}</div>
           </div>
-        `)
-        .join("");
+        `
+      )
+      .join("");
+  }
+
+  function bindGalleryHandlers() {
+    const img = $("#gMainImg", propBody);
+    const prev = $("#gPrev", propBody);
+    const next = $("#gNext", propBody);
+    const count = $("#gCount", propBody);
+    const thumbs = $("#gThumbs", propBody);
+
+    function setIdx(i) {
+      const total = currentGallery.fotos.length;
+      if (!total) return;
+
+      currentGallery.idx = (i + total) % total;
+      img.src = currentGallery.fotos[currentGallery.idx];
+      count.textContent = `${currentGallery.idx + 1}/${total}`;
+
+      $$("#gThumbs button", propBody).forEach((b) => b.classList.remove("active"));
+      const active = $(`#gThumbs button[data-i="${currentGallery.idx}"]`, propBody);
+      if (active) active.classList.add("active");
     }
 
-    function bindGalleryHandlers() {
-      const img = $("#gMainImg", propBody);
-      const prev = $("#gPrev", propBody);
-      const next = $("#gNext", propBody);
-      const count = $("#gCount", propBody);
-      const thumbs = $("#gThumbs", propBody);
+    prev.addEventListener("click", () => setIdx(currentGallery.idx - 1));
+    next.addEventListener("click", () => setIdx(currentGallery.idx + 1));
 
-      function setIdx(i) {
-        const total = currentGallery.fotos.length;
-        if (!total) return;
+    thumbs.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-i]");
+      if (!b) return;
+      setIdx(Number(b.dataset.i));
+    });
 
-        currentGallery.idx = (i + total) % total;
-        img.src = currentGallery.fotos[currentGallery.idx];
-        count.textContent = `${currentGallery.idx + 1}/${total}`;
+    setIdx(0);
+  }
 
-        $$("#gThumbs button", propBody).forEach((b) => b.classList.remove("active"));
-        const active = $(`#gThumbs button[data-i="${currentGallery.idx}"]`, propBody);
-        if (active) active.classList.add("active");
-      }
+  function openPropModal(imv) {
+    const fotos =
+      Array.isArray(imv.fotos) && imv.fotos.length ? imv.fotos : [PLACEHOLDER_IMG];
+    const safeFotos = fotos.map((u) => safeUrl(u) || PLACEHOLDER_IMG);
 
-      prev.addEventListener("click", () => setIdx(currentGallery.idx - 1));
-      next.addEventListener("click", () => setIdx(currentGallery.idx + 1));
+    currentGallery = {
+      fotos: safeFotos.map((u) => cloudFull(u, 1600)),
+      thumbs: safeFotos.map((u) => cloudThumb(u, 240, 160)),
+      idx: 0,
+    };
 
-      thumbs.addEventListener("click", (e) => {
-        const b = e.target.closest("button[data-i]");
-        if (!b) return;
-        setIdx(Number(b.dataset.i));
-      });
+    const cidadeUF = `${(imv.local?.cidade || "").trim()} ${(imv.local?.uf || "")
+      .trim()
+      .toUpperCase()}`.trim();
+    const mapQuery = cidadeUF ? cidadeUF.replace(/\s+/g, "-") : "Brasil";
+    const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
 
-      setIdx(0);
-    }
-
-    function openPropModal(imv) {
-      const fotos = (Array.isArray(imv.fotos) && imv.fotos.length) ? imv.fotos : [PLACEHOLDER_IMG];
-      const safeFotos = fotos.map((u) => safeUrl(u) || PLACEHOLDER_IMG);
-
-      currentGallery = {
-        fotos: safeFotos.map((u) => cloudFull(u, 1600)),
-        thumbs: safeFotos.map((u) => cloudThumb(u, 240, 160)),
-        idx: 0,
-      };
-
-      const cidadeUF = `${(imv.local?.cidade || "").trim()} ${(imv.local?.uf || "").trim().toUpperCase()}`.trim();
-      const mapQuery = cidadeUF ? cidadeUF.replace(/\s+/g, "-") : "Brasil";
-      const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
-
-      const precoM2 = calcularPrecoPorM2(imv.precoTotal, imv.areaTotal);
-
-      propBody.innerHTML = `
-        <div class="prop-modal">
-          <div class="gallery">
-            <div class="g-main">
-              <img id="gMainImg" alt="Foto do imóvel" src="${currentGallery.fotos[0]}">
-              <div class="g-nav">
-                <button type="button" id="gPrev" aria-label="Anterior">‹</button>
-                <button type="button" id="gNext" aria-label="Próxima">›</button>
-              </div>
-              <div class="g-count" id="gCount">1/${currentGallery.fotos.length}</div>
+    propBody.innerHTML = `
+      <div class="prop-modal">
+        <div class="gallery">
+          <div class="g-main">
+            <img id="gMainImg" alt="Foto do imóvel" src="${currentGallery.fotos[0]}">
+            <div class="g-nav">
+              <button type="button" id="gPrev" aria-label="Anterior">‹</button>
+              <button type="button" id="gNext" aria-label="Próxima">›</button>
             </div>
+            <div class="g-count" id="gCount">1/${currentGallery.fotos.length}</div>
+          </div>
 
-            <div class="g-thumbs" id="gThumbs">
-              ${currentGallery.thumbs.map((u, i) => `
-                <button type="button" class="${i === 0 ? "active" : ""}" data-i="${i}" aria-label="Miniatura ${i+1}">
-                  <img alt="Miniatura ${i + 1}" src="${u}">
-                </button>
-              `).join("")}
+          <div class="g-thumbs" id="gThumbs">
+            ${currentGallery.thumbs
+              .map(
+                (u, i) => `
+              <button type="button" class="${i === 0 ? "active" : ""}" data-i="${i}" aria-label="Miniatura ${i + 1}">
+                <img alt="Miniatura ${i + 1}" src="${u}">
+              </button>
+            `
+              )
+              .join("")}
+          </div>
+        </div>
+
+        <div class="prop-head">
+          <div class="prop-head-left">
+            <div class="prop-title-big">${escapeHtml(imv.titulo || "(Sem título)")}</div>
+            <div class="prop-loc-big">📍 ${escapeHtml(imv.local?.bairro || "-")}, ${escapeHtml(imv.local?.cidade || "-")} - ${(imv.local?.uf || "-").toUpperCase()}</div>
+
+            <div class="prop-tags">
+              <span class="badge tipo">${TIPOS_LABEL[imv.tipo] || imv.tipo}</span>
+              <span class="badge ${statusBadgeClass(imv.status)}">${STATUS_LABEL[imv.status] || imv.status}</span>
             </div>
           </div>
 
-          <div class="prop-head">
-            <div class="prop-head-left">
-              <div class="prop-title-big">${escapeHtml(imv.titulo || "(Sem título)")}</div>
-              <div class="prop-loc-big">📍 ${escapeHtml(imv.local?.bairro || "-")}, ${escapeHtml(imv.local?.cidade || "-")} - ${(imv.local?.uf || "-").toUpperCase()}</div>
-
-              <div class="prop-tags">
-                <span class="badge tipo">${TIPOS_LABEL[imv.tipo] || imv.tipo}</span>
-                <span class="badge ${statusBadgeClass(imv.status)}">${STATUS_LABEL[imv.status] || imv.status}</span>
-              </div>
-            </div>
-
-            <div class="prop-head-right">
-              <div class="prop-price-big">${moneyBRL(imv.precoTotal)}</div>
-              <div class="prop-area-lines">
-                <div>${imv.areaConstruida ? `Área construída: <b>${numBR(imv.areaConstruida)}</b>` : `Área construída: <b>-</b>`}</div>
-                <div>${imv.areaTotal ? `Área total: <b>${numBR(imv.areaTotal)}</b>` : `Área total: <b>-</b>`}</div>
-
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-actions-row modal-actions-wide">
-            <a class="btn btn-success action-wide" href="${SOCIAL.whatsapp}" target="_blank" rel="noopener">WhatsApp</a>
-            <a class="btn btn-soft action-wide" href="${SOCIAL.instagram}" target="_blank" rel="noopener">Instagram</a>
-          </div>
-
-          <div class="section-title">Estrutura do Imóvel</div>
-          <div class="info-cards info-cards-icons">
-            ${estruturaCardsIcons(imv.estrutura)}
-          </div>
-
-          <div style="margin-top:12px;">
-            <div class="section-title">Descrição</div>
-            <div class="desc-box">
-              ${escapeHtml(imv.descricao || "Sem descrição.")}
-            </div>
-          </div>
-
-          <div style="margin-top:12px;">
-            <div class="section-title">Localização</div>
-            <div class="subtle">Mostrando apenas cidade/UF (sem endereço exato).</div>
-            <div class="map-wrap">
-              <iframe title="Mapa" src="${mapSrc}" loading="lazy"></iframe>
+          <div class="prop-head-right">
+            <div class="prop-price-big">${moneyBRL(imv.precoTotal)}</div>
+            <div class="prop-area-lines">
+              <div>${imv.areaConstruida ? `Área construída: <b>${numBR(imv.areaConstruida)}</b>` : `Área construída: <b>-</b>`}</div>
+              <div>${imv.areaTotal ? `Área total: <b>${numBR(imv.areaTotal)}</b>` : `Área total: <b>-</b>`}</div>
             </div>
           </div>
         </div>
-      `;
 
-      bindGalleryHandlers();
-      propOverlay.classList.add("open");
-      propOverlay.setAttribute("aria-hidden", "false");
-    }
+        <div class="modal-actions-row modal-actions-wide">
+          <a class="btn btn-success action-wide" href="${SOCIAL.whatsapp}" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn btn-soft action-wide" href="${SOCIAL.instagram}" target="_blank" rel="noopener">Instagram</a>
+        </div>
 
-    function closePropModal() {
-      propOverlay.classList.remove("open");
-      propOverlay.setAttribute("aria-hidden", "true");
-      propBody.innerHTML = "";
-    }
+        <div class="section-title">Estrutura do Imóvel</div>
+        <div class="info-cards info-cards-icons">
+          ${estruturaCardsIcons(imv.estrutura)}
+        </div>
 
-    ["input", "change"].forEach((evt) => {
-      fBusca.addEventListener(evt, renderCards);
-      fTipo.addEventListener(evt, renderCards);
-      fStatus.addEventListener(evt, renderCards);
-    });
+        <div style="margin-top:12px;">
+          <div class="section-title">Descrição</div>
+          <div class="desc-box">${escapeHtml(imv.descricao || "Sem descrição.")}</div>
+        </div>
 
-    grid.addEventListener("click", (e) => {
-      const card = e.target.closest(".prop-card[data-id]");
-      if (!card) return;
+        <div style="margin-top:12px;">
+          <div class="section-title">Localização</div>
+          <div class="subtle">Mostrando apenas cidade/UF (sem endereço exato).</div>
+          <div class="map-wrap">
+            <iframe title="Mapa" src="${mapSrc}" loading="lazy"></iframe>
+          </div>
+        </div>
+      </div>
+    `;
 
-      const id = card.dataset.id;
-      const imv = cacheLista.find((x) => x.id === id);
-      if (!imv) return;
-
-      openPropModal(imv);
-    });
-
-    propOverlay.addEventListener("click", (e) => {
-      if (e.target === propOverlay) closePropModal();
-      const btn = e.target.closest("[data-close-modal='prop']");
-      if (btn) closePropModal();
-    });
-
-    (async () => {
-      cacheLista = await carregarImoveis();
-      renderCards();
-    })();
+    bindGalleryHandlers();
+    propOverlay.classList.add("open");
+    propOverlay.setAttribute("aria-hidden", "false");
   }
+
+  function closePropModal() {
+    propOverlay.classList.remove("open");
+    propOverlay.setAttribute("aria-hidden", "true");
+    propBody.innerHTML = "";
+  }
+
+  // ✅ listeners (agora com preço)
+  ["input", "change"].forEach((evt) => {
+    if (fBusca) fBusca.addEventListener(evt, renderCards);
+    if (fTipo) fTipo.addEventListener(evt, renderCards);
+    if (fPreco) fPreco.addEventListener(evt, renderCards);
+  });
+
+  grid.addEventListener("click", (e) => {
+    const card = e.target.closest(".prop-card[data-id]");
+    if (!card) return;
+
+    const id = card.dataset.id;
+    const imv = cacheLista.find((x) => x.id === id);
+    if (!imv) return;
+
+    openPropModal(imv);
+  });
+
+  propOverlay.addEventListener("click", (e) => {
+    if (e.target === propOverlay) closePropModal();
+    const btn = e.target.closest("[data-close-modal='prop']");
+    if (btn) closePropModal();
+  });
+
+  (async () => {
+    cacheLista = await carregarImoveis();
+    renderCards();
+  })();
+}
+
 
   /* -----------------------------
      ESCAPE HTML
@@ -1494,5 +1521,6 @@ if (actionBtn) {
   window.excluirImovel = excluirImovel;
   window.calcularPrecoPorM2 = calcularPrecoPorM2;
 })();
+
 
 
