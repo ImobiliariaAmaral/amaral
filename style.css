@@ -1823,69 +1823,23 @@ body[data-page="adm"]{
 
 }
 /* =========================================================
-   PATCH FINAL - ADM MOBILE (COLAR NO FIM DO ARQUIVO)
-   Corrige: botão Novo Imóvel, tabela, ações e overflow
+   ADM - TABELA MOBILE: AÇÕES FIXAS NA DIREITA
+   (não mexe na vitrine)
 ========================================================= */
-
-/* ADM: nunca deixa o site criar scroll lateral por acidente */
-body[data-page="adm"]{
-  overflow-x: hidden;
-}
-
-/* ===== Cabeçalho do card do ADM (Gerenciar Imóveis) ===== */
 @media (max-width: 820px){
 
-  /* card-head vira "coluna" e centraliza */
-  body[data-page="adm"] .card .card-head{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start; /* mata o space-between do desktop */
-    gap: 10px;
-    text-align: center;
-  }
-
-  /* botão Novo Imóvel: ocupa o certo e fica central */
-  body[data-page="adm"] #btnNovoImovel{
-    width: 100%;
-    max-width: 340px;
-    justify-content: center;
-  }
-
-  /* se tiver um botão "Ver Vitrine" dentro do card, mesma regra */
-  body[data-page="adm"] .card .card-head .btn{
-    width: 100%;
-    max-width: 340px;
-    justify-content: center;
-  }
-}
-
-/* ===== TABELA ADM no mobile ===== */
-@media (max-width: 820px){
-
-  /* rolagem horizontal só na tabela */
   body[data-page="adm"] .table-wrap{
     overflow-x: auto;
-    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 10px;
   }
 
-  /* tabela pode ser larga, mas sem estourar a tela toda */
+  /* garante que a tabela ainda pode "passar" pro lado */
   body[data-page="adm"] .table{
-    width: 100%;
-    min-width: 760px; /* pode ajustar: 700~900 */
+    min-width: 760px; /* pode ajustar 720~880 */
   }
 
-  /* thumbnails menores */
-  body[data-page="adm"] .cell-thumb{ width: 68px; }
-  body[data-page="adm"] .cell-thumb img{
-    width: 62px;
-    height: 44px;
-    border-radius: 12px;
-  }
-
-  /* fixa a última coluna (Ações) na direita */
+  /* fixa a última coluna (Ações) */
   body[data-page="adm"] .table thead th:last-child,
   body[data-page="adm"] .table tbody td:last-child{
     position: sticky;
@@ -1895,7 +1849,7 @@ body[data-page="adm"]{
     box-shadow: -10px 0 18px rgba(0,0,0,0.12);
   }
 
-  /* ações: quebra linha e fica clicável no dedo */
+  /* deixa as ações quebrar linha e caber no dedo */
   body[data-page="adm"] .actions{
     display: flex;
     flex-wrap: wrap;
