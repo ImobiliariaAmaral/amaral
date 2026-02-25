@@ -1520,134 +1520,81 @@ html[data-theme="dark"] .file-wrap{
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 /* =========================================
-   GALERIA - IMAGEM INTEIRA + FUNDO DESFOCADO
-   (SEM TRAVAR AS SETAS)
+   GALERIA FINAL (LIGHT BRANCO / DARK PRETO)
+   SEM CORTE + SETAS OK
 ========================================= */
 
+/* container */
 .gallery .g-main{
   width: 100%;
-  height: clamp(240px, 55vh, 520px);
+  height: clamp(260px, 55vh, 560px);
   position: relative;
-  overflow: hidden;
-  border-radius: 18px;
-  background: #0b0f14;
-}
-
-/* fundo desfocado (NÃO pode bloquear clique) */
-.gallery .g-main::before{
-  content:"";
-  position:absolute;
-  inset:-30px;
-  background-image: var(--g-bg, none);
-  background-size: cover;
-  background-position: center;
-  filter: blur(18px) brightness(0.80);
-  transform: scale(1.15);
-  pointer-events: none;  /* <<< ISSO DESTRAVA AS SETAS */
-  z-index: 0;
-}
-
-/* imagem principal (fica inteira) */
-.gallery .g-main img{
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  display: block;
-}
-
-/* setas e contador SEMPRE acima */
-.gallery .g-nav,
-.gallery .g-count{
-  position: absolute;
-  z-index: 5;            /* <<< acima de tudo */
-}
-
-.gallery .g-nav{
-  inset: 0;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding: 0 10px;
-  pointer-events: none;  /* container não pega clique */
-}
-
-.gallery .g-nav button{
-  pointer-events: auto;  /* botão pega clique */
-}
-
-/* mobile */
-@media (max-width: 768px){
-  .gallery .g-main{
-    height: clamp(200px, 42vh, 360px);
-  }
-}
-
-/* =========================================
-   GALERIA LIMPA (SEM BUG, SEM CORTE, SEM BORDA FEIA)
-========================================= */
-
-/* container da imagem */
-.gallery .g-main{
-  width: 100%;
-  height: clamp(240px, 55vh, 520px);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border-radius: 18px;
-
-  background: #ffffff; /* padrão light */
+  background: #fff; /* light */
 }
 
-/* DARK MODE */
 html[data-theme="dark"] .gallery .g-main{
-  background: #000000;
+  background: #000; /* dark */
 }
 
-/* imagem SEM corte */
+/* imagem: inteira, mas com tamanho mais “cheio” */
 .gallery .g-main img{
-  max-width: 100%;
-  max-height: 100%;
   width: auto;
   height: auto;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   display: block;
+
+  /* evita ficar micro */
+  min-width: 60%;
+  min-height: 60%;
 }
 
-/* mantém setas funcionando */
+/* quando a imagem é muito vertical, não deixa ela ficar gigante na largura */
+@media (min-width: 900px){
+  .gallery .g-main img{
+    min-width: 40%;
+    min-height: 80%;
+  }
+}
+
+/* setas acima de tudo e clicáveis */
 .gallery .g-nav{
-  position: absolute;
-  inset: 0;
+  position:absolute;
+  inset:0;
   display:flex;
   align-items:center;
   justify-content:space-between;
   padding: 0 10px;
+  z-index: 10;
   pointer-events: none;
-  z-index: 5;
 }
-
 .gallery .g-nav button{
   pointer-events: auto;
+  z-index: 11;
 }
 
 /* contador */
 .gallery .g-count{
   position:absolute;
-  top: 12px;
   left: 12px;
-  z-index: 5;
+  top: 12px;
+  z-index: 12;
 }
 
 /* mobile */
 @media (max-width: 768px){
   .gallery .g-main{
-    height: clamp(200px, 42vh, 360px);
+    height: clamp(220px, 42vh, 380px);
+  }
+  .gallery .g-main img{
+    min-width: 75%;
+    min-height: 75%;
   }
 }
-
-
