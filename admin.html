@@ -20,7 +20,56 @@
 </head>
 
 <body data-page="adm">
+<body data-page="adm">
 
+<script>
+(function () {
+  const SENHA = "Amaral@2026";
+  const MAX_TENTATIVAS = 3;
+
+  let tentativas = 0;
+
+  // trava tela
+  document.documentElement.style.display = "none";
+
+  while (tentativas < MAX_TENTATIVAS) {
+    const tentativa = prompt("Digite a senha do admin:");
+
+    if (tentativa === null) {
+      // cancelou → sai
+      alert("Acesso cancelado.");
+      return;
+    }
+
+    if (tentativa === SENHA) {
+      document.documentElement.style.display = "";
+      return;
+    }
+
+    tentativas++;
+    alert(`Senha incorreta. Tentativas restantes: ${MAX_TENTATIVAS - tentativas}`);
+  }
+
+  // BLOQUEOU
+  document.body.innerHTML = `
+    <div style="
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      font-family:sans-serif;
+      background:#111;
+      color:#fff;
+      text-align:center;
+    ">
+      <div>
+        <h1>Acesso bloqueado</h1>
+        <p>Você excedeu o número de tentativas.</p>
+      </div>
+    </div>
+  `;
+})();
+</script>
   <!-- =========================================================
        HEADER
   ========================================================== -->
@@ -422,6 +471,7 @@
   <script src="./script.js" defer></script>
 </body>
 </html>
+
 
 
 
