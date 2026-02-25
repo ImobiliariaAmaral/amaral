@@ -1592,3 +1592,30 @@ html[data-theme="dark"] .gallery .g-main{
     height: clamp(200px, 42vh, 360px) !important;
   }
 }
+/* =========================================
+   FUNDO DA GALERIA NO DARK = "VIDRO" (TRANSPARENTE)
+   (cola no FINAL do CSS)
+========================================= */
+
+/* Light: branco */
+.gallery .g-main{
+  background: #fff !important;
+}
+
+/* Dark: preto com transparência (glass) */
+html[data-theme="dark"] .gallery .g-main{
+  background: rgba(0,0,0,0.55) !important;  /* transparente */
+  backdrop-filter: blur(6px) !important;     /* efeito vidro */
+  -webkit-backdrop-filter: blur(6px) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* Se quiser ainda mais parecido com o “bom” de antes:
+   um degradê bem leve pra dar profundidade */
+html[data-theme="dark"] .gallery .g-main{
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.45),
+    rgba(0,0,0,0.65)
+  ) !important;
+}
