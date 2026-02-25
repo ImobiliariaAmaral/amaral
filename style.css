@@ -1520,3 +1520,66 @@ html[data-theme="dark"] .file-wrap{
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* =========================================
+   FIX GALERIA MODAL - imagem inteira + responsivo
+   (cola no FINAL do CSS pra sobrescrever)
+========================================= */
+
+/* Container da imagem principal (galeria) */
+.gallery .g-main{
+  width: 100%;
+  aspect-ratio: 16 / 9;   /* padrão bonito */
+  max-height: 70vh;       /* não estoura no desktop */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: rgba(0,0,0,0.04);
+}
+
+/* Imagem principal SEM cortar */
+.gallery .g-main img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;     /* <<< mostra inteira */
+  object-position: center;
+  display: block;
+}
+
+/* No celular: menos altura pra não ficar gigante */
+@media (max-width: 768px){
+  .gallery .g-main{
+    aspect-ratio: 4 / 3;
+    max-height: 45vh;
+  }
+}
+
+/* Thumbs: padroniza tamanho e não estoura */
+.gallery .g-thumbs{
+  gap: 8px;
+  padding: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gallery .g-thumbs button{
+  width: 64px;
+  min-width: 64px;
+  height: 48px;            /* travado, fica padrão */
+  aspect-ratio: auto;      /* já estamos travando no height */
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.gallery .g-thumbs img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;       /* thumb pode ser cover mesmo */
+  display: block;
+}
+
+/* Modal: evita scroll lateral por causa de imagens */
+.modal, .modal-card, .mbody{
+  overflow-x: hidden;
+}
