@@ -1517,13 +1517,3 @@ function initVitrine() {
   window.excluirImovel = excluirImovel;
   window.calcularPrecoPorM2 = calcularPrecoPorM2;
 })();
-
-(function(){
-  const main = document.querySelector('.gallery .g-main');
-  const img  = main?.querySelector('img');
-  if(!main || !img) return;
-
-
-
-
-
