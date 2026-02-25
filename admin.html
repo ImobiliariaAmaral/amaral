@@ -8,47 +8,10 @@
 
   <!-- aplica o tema ANTES de pintar a tela (evita piscada) -->
   <script>
-    (function () {
-      try {
-        const saved = localStorage.getItem("amaral_theme");
-        if (saved === "dark" || saved === "light") {
-          document.documentElement.setAttribute("data-theme", saved);
-        }
-      } catch {}
-    })();
-  </script>
-</head>
-
-<body data-page="adm">
-<script>
 (function () {
   const SENHA = "Amaral321.";
-  const MAX_TENTATIVAS = 3;
 
-  let tentativas = 0;
-
-  // trava tela
-  document.documentElement.style.display = "none";
-
-  while (tentativas < MAX_TENTATIVAS) {
-    const tentativa = prompt("Digite a senha do admin:");
-
-    if (tentativa === null) {
-      // cancelou → sai
-      alert("Acesso cancelado.");
-      return;
-    }
-
-    if (tentativa === SENHA) {
-      document.documentElement.style.display = "";
-      return;
-    }
-
-    tentativas++;
-    alert(`Senha incorreta. Tentativas restantes: ${MAX_TENTATIVAS - tentativas}`);
-  }
-
-  // BLOQUEOU
+  // cria tela de login
   document.body.innerHTML = `
     <div style="
       display:flex;
@@ -58,14 +21,50 @@
       font-family:sans-serif;
       background:#111;
       color:#fff;
-      text-align:center;
     ">
-      <div>
-        <h1>Acesso bloqueado</h1>
-        <p>Você excedeu o número de tentativas.</p>
+      <div style="
+        background:#1a1a1a;
+        padding:30px;
+        border-radius:12px;
+        text-align:center;
+        width:300px;
+      ">
+        <h2>Área Administrativa</h2>
+        <input id="senhaInput" type="password" placeholder="Digite a senha"
+          style="
+            width:100%;
+            margin-top:15px;
+            padding:10px;
+            border-radius:8px;
+            border:none;
+          "
+        />
+        <button onclick="verificarSenha()" style="
+          margin-top:15px;
+          width:100%;
+          padding:10px;
+          border:none;
+          border-radius:8px;
+          background:#1a477b;
+          color:#fff;
+          font-weight:bold;
+          cursor:pointer;
+        ">
+          Entrar
+        </button>
       </div>
     </div>
   `;
+
+  window.verificarSenha = function () {
+    const input = document.getElementById("senhaInput").value;
+
+    if (input === SENHA) {
+      location.reload(); // libera a página
+    } else {
+      alert("Senha incorreta");
+    }
+  };
 })();
 </script>
   
@@ -470,6 +469,7 @@
   <script src="./script.js" defer></script>
 </body>
 </html>
+
 
 
 
