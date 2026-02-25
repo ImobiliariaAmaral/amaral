@@ -10,61 +10,106 @@
   <script>
 (function () {
   const SENHA = "Amaral321.";
+  let tentativas = 0;
+  const MAX = 3;
 
-  // cria tela de login
-  document.body.innerHTML = `
+  // esconde o site
+  document.documentElement.style.visibility = "hidden";
+
+  // cria overlay automático
+  const overlay = document.createElement("div");
+  overlay.style = `
+    position:fixed;
+    inset:0;
+    background:#111;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+    font-family:sans-serif;
+  `;
+
+  overlay.innerHTML = `
     <div style="
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      height:100vh;
-      font-family:sans-serif;
-      background:#111;
+      background:#1a1a1a;
+      padding:30px;
+      border-radius:12px;
+      text-align:center;
+      width:300px;
       color:#fff;
     ">
-      <div style="
-        background:#1a1a1a;
-        padding:30px;
-        border-radius:12px;
-        text-align:center;
-        width:300px;
-      ">
-        <h2>Área Administrativa</h2>
-        <input id="senhaInput" type="password" placeholder="Digite a senha"
-          style="
-            width:100%;
-            margin-top:15px;
-            padding:10px;
-            border-radius:8px;
-            border:none;
-          "
-        />
-        <button onclick="verificarSenha()" style="
-          margin-top:15px;
+      <h2>Área Administrativa</h2>
+      <input id="senhaInput" type="password" placeholder="Digite a senha"
+        style="
           width:100%;
+          margin-top:15px;
           padding:10px;
-          border:none;
           border-radius:8px;
-          background:#1a477b;
-          color:#fff;
-          font-weight:bold;
-          cursor:pointer;
-        ">
-          Entrar
-        </button>
-      </div>
+          border:none;
+        "
+      />
+      <button id="btnLogin" style="
+        margin-top:15px;
+        width:100%;
+        padding:10px;
+        border:none;
+        border-radius:8px;
+        background:#1a477b;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      ">
+        Entrar
+      </button>
+      <p id="msg" style="margin-top:10px;font-size:12px;color:#aaa;"></p>
     </div>
   `;
 
-  window.verificarSenha = function () {
-    const input = document.getElementById("senhaInput").value;
+  document.body.appendChild(overlay);
 
-    if (input === SENHA) {
-      location.reload(); // libera a página
-    } else {
-      alert("Senha incorreta");
+  function liberar(){
+    overlay.remove();
+    document.documentElement.style.visibility = "visible";
+  }
+
+  function erro(){
+    tentativas++;
+    const restante = MAX - tentativas;
+    document.getElementById("msg").innerText =
+      `Senha incorreta. Restam ${restante} tentativa(s).`;
+
+    if (tentativas >= MAX){
+      document.body.innerHTML = `
+        <div style="
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          height:100vh;
+          background:#111;
+          color:#fff;
+          font-family:sans-serif;
+        ">
+          <div>
+            <h1>Acesso bloqueado</h1>
+            <p>Você excedeu o número de tentativas.</p>
+          </div>
+        </div>
+      `;
     }
-  };
+  }
+
+  function verificar(){
+    const val = document.getElementById("senhaInput").value;
+    val === SENHA ? liberar() : erro();
+  }
+
+  document.getElementById("btnLogin").onclick = verificar;
+
+  // ENTER funciona
+  document.getElementById("senhaInput").addEventListener("keydown", (e)=>{
+    if(e.key === "Enter") verificar();
+  });
+
 })();
 </script>
   
@@ -469,6 +514,7 @@
   <script src="./script.js" defer></script>
 </body>
 </html>
+
 
 
 
