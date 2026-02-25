@@ -1518,6 +1518,26 @@ function initVitrine() {
   window.calcularPrecoPorM2 = calcularPrecoPorM2;
 })();
 
+(function(){
+  const main = document.querySelector('.gallery .g-main');
+  const img  = main?.querySelector('img');
+  if(!main || !img) return;
+
+  function syncBg(){
+    const src = img.currentSrc || img.src;
+    if(src) main.style.setProperty('--g-bg', `url("${src}")`);
+  }
+
+  // primeira vez
+  if (img.complete) syncBg();
+  img.addEventListener('load', syncBg);
+
+  // quando seu código trocar o src
+  new MutationObserver(syncBg).observe(img, {
+    attributes: true,
+    attributeFilter: ['src']
+  });
+})();
 
 
 
