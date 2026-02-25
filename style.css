@@ -1586,3 +1586,68 @@ html[data-theme="dark"] .file-wrap{
     height: clamp(200px, 42vh, 360px);
   }
 }
+
+/* =========================================
+   GALERIA LIMPA (SEM BUG, SEM CORTE, SEM BORDA FEIA)
+========================================= */
+
+/* container da imagem */
+.gallery .g-main{
+  width: 100%;
+  height: clamp(240px, 55vh, 520px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 18px;
+
+  background: #ffffff; /* padrão light */
+}
+
+/* DARK MODE */
+html[data-theme="dark"] .gallery .g-main{
+  background: #000000;
+}
+
+/* imagem SEM corte */
+.gallery .g-main img{
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* mantém setas funcionando */
+.gallery .g-nav{
+  position: absolute;
+  inset: 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 0 10px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.gallery .g-nav button{
+  pointer-events: auto;
+}
+
+/* contador */
+.gallery .g-count{
+  position:absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 5;
+}
+
+/* mobile */
+@media (max-width: 768px){
+  .gallery .g-main{
+    height: clamp(200px, 42vh, 360px);
+  }
+}
+
+
