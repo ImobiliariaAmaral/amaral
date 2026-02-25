@@ -1519,4 +1519,27 @@ function initVitrine() {
 })();
 
 
+(function(){
+  const main = document.querySelector('.gallery .g-main');
+  if(!main) return;
+
+  const img = main.querySelector('img');
+  if(!img) return;
+
+  function syncBg(){
+    if(!img.src) return;
+    main.style.setProperty('--g-bg', `url("${img.src}")`);
+  }
+
+  // quando carregar a primeira imagem
+  if (img.complete) syncBg();
+  img.addEventListener('load', syncBg);
+
+  // quando seu código trocar o src, isso detecta
+  const obs = new MutationObserver(syncBg);
+  obs.observe(img, { attributes: true, attributeFilter: ['src'] });
+
+  // garantia extra
+  syncBg();
+})();
 
