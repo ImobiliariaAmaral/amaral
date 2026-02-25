@@ -1521,80 +1521,74 @@ html[data-theme="dark"] .file-wrap{
   text-overflow: ellipsis;
 }
 /* =========================================
-   GALERIA FINAL (LIGHT BRANCO / DARK PRETO)
-   SEM CORTE + SETAS OK
+   GALERIA FINAL (NUNCA CORTA / SEM ZOOM)
+   LIGHT: branco | DARK: preto
 ========================================= */
 
-/* container */
 .gallery .g-main{
-  width: 100%;
-  height: clamp(260px, 55vh, 560px);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border-radius: 18px;
-  background: #fff; /* light */
+  width: 100% !important;
+  height: clamp(240px, 55vh, 520px) !important;
+  position: relative !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  overflow: hidden !important;
+  border-radius: 18px !important;
+
+  background: #fff !important;   /* light */
 }
 
 html[data-theme="dark"] .gallery .g-main{
-  background: #000; /* dark */
+  background: #000 !important;   /* dark */
 }
 
-/* imagem: inteira, mas com tamanho mais “cheio” */
+/* IMAGEM: inteira SEM cortar e SEM zoom */
 .gallery .g-main img{
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
 
-  /* evita ficar micro */
-  min-width: 60%;
-  min-height: 60%;
+  object-fit: contain !important;
+  object-position: center !important;
+
+  display: block !important;
+
+  /* mata qualquer regra antiga tipo min-width/min-height */
+  min-width: 0 !important;
+  min-height: 0 !important;
 }
 
-/* quando a imagem é muito vertical, não deixa ela ficar gigante na largura */
-@media (min-width: 900px){
-  .gallery .g-main img{
-    min-width: 40%;
-    min-height: 80%;
-  }
-}
-
-/* setas acima de tudo e clicáveis */
+/* Setas sempre clicáveis */
 .gallery .g-nav{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding: 0 10px;
-  z-index: 10;
-  pointer-events: none;
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 10px !important;
+  z-index: 50 !important;
+  pointer-events: none !important;
 }
+
 .gallery .g-nav button{
-  pointer-events: auto;
-  z-index: 11;
+  pointer-events: auto !important;
+  z-index: 51 !important;
 }
 
 /* contador */
 .gallery .g-count{
-  position:absolute;
-  left: 12px;
-  top: 12px;
-  z-index: 12;
+  position: absolute !important;
+  top: 12px !important;
+  left: 12px !important;
+  z-index: 52 !important;
 }
 
 /* mobile */
 @media (max-width: 768px){
   .gallery .g-main{
-    height: clamp(220px, 42vh, 380px);
-  }
-  .gallery .g-main img{
-    min-width: 75%;
-    min-height: 75%;
+    height: clamp(200px, 42vh, 360px) !important;
   }
 }
