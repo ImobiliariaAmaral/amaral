@@ -25,11 +25,11 @@
             </div>
 
             <div class="right">
-                <a class="btn btn-outline" href="https://wa.me/5514982104567" target="_blank" rel="noopener">
+                <a class="btn btn-outline" href="https://wa.me/5514982104567" target="_blank" rel="noopener" title="WhatsApp">
                     WhatsApp
                 </a>
-                <button class="theme-btn" id="themeToggle" type="button">
-                    <span class="theme-ico">🌙</span>
+                <button class="theme-btn" id="themeToggle" type="button" aria-label="Alternar tema" title="Alternar tema">
+                    <span class="theme-ico" aria-hidden="true">🌙</span>
                 </button>
             </div>
         </div>
@@ -37,10 +37,10 @@
 
     <main class="main">
         <div class="container">
-            <section class="filters">
+            <section class="filters" aria-label="Filtros de busca">
                 <div class="field-inline">
-                    <label for="fBusca">Busca</label>
-                    <input id="fBusca"/>
+                    <label for="fBusca">Busca (bairro ou título)</label>
+                    <input id="fBusca" placeholder="Ex: Centro, Casa moderna..."/>
                 </div>
 
                 <div class="field-inline">
@@ -56,7 +56,7 @@
                 </div>
 
                 <div class="field-inline">
-                    <label for="fPreco">Preço</label>
+                    <label for="fPreco">Preço (até)</label>
                     <select id="fPreco">
                         <option value="todos">Todos</option>
                         <option value="200000">Até R$ 200.000</option>
@@ -69,39 +69,68 @@
                 </div>
             </section>
 
-            <section id="gridCards" class="grid-cards"></section>
+            <section id="gridCards" class="grid-cards" aria-label="Lista de imóveis">
+            </section>
 
-            <div id="emptyState" class="hidden">
-                Nenhum imóvel encontrado.
+            <div id="emptyState" class="subtle hidden" style="margin-top:14px; text-align:center;">
+                Nenhum imóvel encontrado com os filtros atuais.
             </div>
         </div>
     </main>
 
-    <div class="modal-overlay" id="modalPropOverlay">
-        <div class="modal">
+    <div class="modal-overlay" id="modalPropOverlay" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-label="Detalhes do imóvel">
             <div class="mhead">
                 <h3>Detalhes do Imóvel</h3>
-                <button class="xclose" data-close-modal="prop">X</button>
+                <div class="m-actions">
+                    <button class="xclose" data-close-modal="prop" title="Fechar">X</button>
+                </div>
             </div>
-            <div class="mbody" id="modalPropBody"></div>
+            <div class="mbody" id="modalPropBody">
+            </div>
         </div>
     </div>
 
-    <!-- 🔥 NOVO (URL CONTROL) -->
-    <script>
-      window.getParam = (name) => new URL(window.location).searchParams.get(name);
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-      window.setParam = (name, value) => {
-        const url = new URL(window.location);
-        url.searchParams.set(name, value);
-        history.replaceState({}, "", url);
-      };
+        const firebaseConfig = {
+            apiKey: "AIzaSyB2iHj7C3y9VS07QrbeHQrF6pwsDyTYeJg",
+            authDomain: "imobiliaria-amaral1.firebaseapp.com",
+            projectId: "imobiliaria-amaral1",
+            storageBucket: "imobiliaria-amaral1.firebasestorage.app",
+            messagingSenderId: "64993530464",
+            appId: "1:64993530464:web:117eb46180abe57add6905",
+            measurementId: "G-KQYZTVFZJN"
+        };
 
-      window.removeParam = (name) => {
-        const url = new URL(window.location);
-        url.searchParams.delete(name);
-        history.replaceState({}, "", url);
-      };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const colImoveis = collection(db, "imoveis");
+
+        window.DB = {
+            async upsertImovel(imv) {
+                const id = String(imv?.id || "").trim();
+                if (!id) throw new Error("Imóvel sem id");
+                const ref = doc(db, "imoveis", id);
+                const payload = { 
+                    ...imv, 
+                    __updatedAt: serverTimestamp(), 
+                    __createdAt: imv.__createdAt || serverTimestamp() 
+                };
+                await setDoc(ref, payload, { merge: true });
+                return id;
+            },
+            async deleteImovel(id) {
+                await deleteDoc(doc(db, "imoveis", String(id)));
+            },
+            async listImoveis() {
+                const snap = await getDocs(colImoveis);
+                return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            }
+        };
+        console.log("Firebase/Firestore OK ✅");
     </script>
 
     <script src="./script.js" defer></script>
