@@ -9,13 +9,12 @@
 
 <body data-page="vitrine">
 
-  <!-- HEADER DA VITRINE (NÃO misturar com header-adm) -->
+  <!-- HEADER -->
   <header class="header-vitrine">
     <div class="container inner">
 
-      <div class="brand" aria-label="Imobiliária Amaral">
-        <div class="logo" aria-hidden="true">
-          <!-- ESTE ID é usado pelo seu script.js (applyLogo) -->
+      <div class="brand">
+        <div class="logo">
           <img
             id="brandLogo"
             class="logo-img"
@@ -33,13 +32,12 @@
       </div>
 
       <div class="right">
-        <a class="btn btn-outline" href="https://wa.me/5514982104567" target="_blank" rel="noopener" title="WhatsApp">
+        <a class="btn btn-outline" href="https://wa.me/5514982104567" target="_blank">
           WhatsApp
         </a>
 
-        <!-- mantém id themeToggle (seu script.js usa isso) -->
-        <button class="theme-btn" id="themeToggle" type="button" aria-label="Alternar tema" title="Alternar tema">
-          <span class="theme-ico" aria-hidden="true">🌙</span>
+        <button class="theme-btn" id="themeToggle" type="button">
+          🌙
         </button>
       </div>
 
@@ -49,65 +47,35 @@
   <main class="main">
     <div class="container">
 
-      <section class="filters" aria-label="Filtros de busca">
-        <div class="field-inline">
-          <label for="fBusca">Busca (bairro ou título)</label>
-          <input id="fBusca" placeholder="Ex: Centro, Casa moderna..."/>
-        </div>
+      <!-- FILTROS -->
+      <section class="filters">
+        <input id="fBusca" placeholder="Buscar..."/>
 
-        <div class="field-inline">
-          <label for="fTipo">Tipo</label>
-          <select id="fTipo">
-            <option value="todos">Todos</option>
-            <option value="casa">Casa</option>
-            <option value="apartamento">Apartamento</option>
-            <option value="terreno">Terreno</option>
-            <option value="sitio">Sítio</option>
-            <option value="chacara">Chácara</option>
-          </select>
-        </div>
-
-        <div class="field-inline">
-            <label for="fPreco">Preço (até)</label>
-            <select id="fPreco">
-              <option value="todos">Todos</option>
-              <option value="200000">Até R$ 200.000</option>
-              <option value="300000">Até R$ 300.000</option>
-              <option value="400000">Até R$ 400.000</option>
-              <option value="500000">Até R$ 500.000</option>
-              <option value="700000">Até R$ 700.000</option>
-              <option value="1000000">Até R$ 1.000.000</option>
-            </select>
-          </div>
-
-
-      <section id="gridCards" class="grid-cards" aria-label="Lista de imóveis">
-        <!-- JS -->
+        <select id="fTipo">
+          <option value="todos">Todos</option>
+          <option value="casa">Casa</option>
+          <option value="apartamento">Apartamento</option>
+        </select>
       </section>
 
-      <div id="emptyState" class="subtle hidden" style="margin-top:14px; text-align:center;">
-        Nenhum imóvel encontrado com os filtros atuais.
-      </div>
+      <!-- CARDS -->
+      <section id="gridCards" class="grid-cards"></section>
 
     </div>
   </main>
 
-  <!-- MODAL IMÓVEL (VITRINE) -->
-  <div class="modal-overlay" id="modalPropOverlay" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Detalhes do imóvel">
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalPropOverlay" style="display:none;">
+    <div class="modal">
       <div class="mhead">
-        <h3>Detalhes do Imóvel</h3>
-        <div class="m-actions">
-          <button class="xclose" data-close-modal="prop" title="Fechar">X</button>
-        </div>
+        <h3>Detalhes</h3>
+        <button data-close-modal="prop">X</button>
       </div>
-      <div class="mbody" id="modalPropBody">
-        <!-- JS -->
-      </div>
+      <div id="modalPropBody"></div>
     </div>
   </div>
 
-  <!-- 1) Firebase/Firestore (TEM QUE VIR PRIMEIRO) -->
+  <!-- FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
     import {
@@ -121,44 +89,102 @@
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
     const firebaseConfig = {
-    apiKey: "AIzaSyB2iHj7C3y9VS07QrbeHQrF6pwsDyTYeJg",
-    authDomain: "imobiliaria-amaral1.firebaseapp.com",
-    projectId: "imobiliaria-amaral1",
-    storageBucket: "imobiliaria-amaral1.firebasestorage.app",
-    messagingSenderId: "64993530464",
-    appId: "1:64993530464:web:117eb46180abe57add6905",
-    measurementId: "G-KQYZTVFZJN"
-  };
+      apiKey: "AIzaSyB2iHj7C3y9VS07QrbeHQrF6pwsDyTYeJg",
+      authDomain: "imobiliaria-amaral1.firebaseapp.com",
+      projectId: "imobiliaria-amaral1",
+      storageBucket: "imobiliaria-amaral1.firebasestorage.app",
+      messagingSenderId: "64993530464",
+      appId: "1:64993530464:web:117eb46180abe57add6905",
+      measurementId: "G-KQYZTVFZJN"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const colImoveis = collection(db, "imoveis");
 
     window.DB = {
-      async upsertImovel(imv) {
-        const id = String(imv?.id || "").trim();
-        if (!id) throw new Error("Imóvel sem id");
-
-        const ref = doc(db, "imoveis", id);
-        const payload = { ...imv, __updatedAt: serverTimestamp(), __createdAt: imv.__createdAt || serverTimestamp() };
-        await setDoc(ref, payload, { merge: true });
-        return id;
-      },
-      async deleteImovel(id) {
-        await deleteDoc(doc(db, "imoveis", String(id)));
-      },
       async listImoveis() {
         const snap = await getDocs(colImoveis);
         return snap.docs.map(d => ({ id: d.id, ...d.data() }));
       }
     };
-
-    console.log("Firebase/Firestore OK ✅");
   </script>
 
-  <!-- 2) Seu script (DEPOIS do Firebase) -->
-  <script src="./script.js" defer></script>
+  <!-- SCRIPT PRINCIPAL -->
+  <script>
+    let imoveis = [];
+
+    function getParam() {
+      return new URLSearchParams(window.location.search).get("imovel");
+    }
+
+    function setParam(id) {
+      const url = new URL(window.location);
+      url.searchParams.set("imovel", id);
+      history.pushState({}, "", url);
+    }
+
+    function clearParam() {
+      const url = new URL(window.location);
+      url.searchParams.delete("imovel");
+      history.pushState({}, "", url);
+    }
+
+    function abrirCard(id) {
+      setParam(id);
+
+      const imv = imoveis.find(i => i.id == id);
+      if (!imv) return;
+
+      document.getElementById("modalPropBody").innerHTML = `
+        <h2>${imv.titulo || "Imóvel"}</h2>
+        <p>${imv.bairro || ""}</p>
+        <p>R$ ${imv.preco || ""}</p>
+      `;
+
+      document.getElementById("modalPropOverlay").style.display = "flex";
+    }
+
+    function fecharModal() {
+      clearParam();
+      document.getElementById("modalPropOverlay").style.display = "none";
+    }
+
+    document.addEventListener("click", e => {
+      if (e.target.matches("[data-close-modal='prop']")) {
+        fecharModal();
+      }
+    });
+
+    async function init() {
+      imoveis = await window.DB.listImoveis();
+
+      const grid = document.getElementById("gridCards");
+
+      imoveis.forEach(imv => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${imv.titulo}</h3>
+          <p>${imv.bairro}</p>
+          <p>R$ ${imv.preco}</p>
+        `;
+        card.onclick = () => abrirCard(imv.id);
+        grid.appendChild(card);
+      });
+
+      const id = getParam();
+      if (id) abrirCard(id);
+    }
+
+    window.addEventListener("popstate", () => {
+      const id = getParam();
+      if (id) abrirCard(id);
+      else fecharModal();
+    });
+
+    init();
+  </script>
+
 </body>
 </html>
-
-
