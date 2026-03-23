@@ -1306,103 +1306,115 @@ function initVitrine() {
     setIdx(0);
   }
 
-  function openPropModal(imv) {
-    const fotos =
-      Array.isArray(imv.fotos) && imv.fotos.length ? imv.fotos : [PLACEHOLDER_IMG];
-    const safeFotos = fotos.map((u) => safeUrl(u) || PLACEHOLDER_IMG);
+ function openPropModal(imv) {
 
-    currentGallery = {
-      fotos: safeFotos.map((u) => cloudFull(u, 1600)),
-      thumbs: safeFotos.map((u) => cloudThumb(u, 240, 160)),
-      idx: 0,
-    };
+  // 🔥 ADICIONA O ID NA URL
+  if (window.setParam) {
+    window.setParam("imovel", imv.id);
+  }
 
-    const cidadeUF = `${(imv.local?.cidade || "").trim()} ${(imv.local?.uf || "")
-      .trim()
-      .toUpperCase()}`.trim();
-    const mapQuery = cidadeUF ? cidadeUF.replace(/\s+/g, "-") : "Brasil";
-    const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
+  const fotos =
+    Array.isArray(imv.fotos) && imv.fotos.length ? imv.fotos : [PLACEHOLDER_IMG];
+  const safeFotos = fotos.map((u) => safeUrl(u) || PLACEHOLDER_IMG);
 
-    propBody.innerHTML = `
-      <div class="prop-modal">
-        <div class="gallery">
-          <div class="g-main">
-            <img id="gMainImg" alt="Foto do imóvel" src="${currentGallery.fotos[0]}">
-            <div class="g-nav">
-              <button type="button" id="gPrev" aria-label="Anterior">‹</button>
-              <button type="button" id="gNext" aria-label="Próxima">›</button>
-            </div>
-            <div class="g-count" id="gCount">1/${currentGallery.fotos.length}</div>
+  currentGallery = {
+    fotos: safeFotos.map((u) => cloudFull(u, 1600)),
+    thumbs: safeFotos.map((u) => cloudThumb(u, 240, 160)),
+    idx: 0,
+  };
+
+  const cidadeUF = `${(imv.local?.cidade || "").trim()} ${(imv.local?.uf || "")
+    .trim()
+    .toUpperCase()}`.trim();
+  const mapQuery = cidadeUF ? cidadeUF.replace(/\s+/g, "-") : "Brasil";
+  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
+
+  propBody.innerHTML = `
+    <div class="prop-modal">
+      <div class="gallery">
+        <div class="g-main">
+          <img id="gMainImg" alt="Foto do imóvel" src="${currentGallery.fotos[0]}">
+          <div class="g-nav">
+            <button type="button" id="gPrev" aria-label="Anterior">‹</button>
+            <button type="button" id="gNext" aria-label="Próxima">›</button>
           </div>
-
-          <div class="g-thumbs" id="gThumbs">
-            ${currentGallery.thumbs
-              .map(
-                (u, i) => `
-              <button type="button" class="${i === 0 ? "active" : ""}" data-i="${i}" aria-label="Miniatura ${i + 1}">
-                <img alt="Miniatura ${i + 1}" src="${u}">
-              </button>
-            `
-              )
-              .join("")}
-          </div>
+          <div class="g-count" id="gCount">1/${currentGallery.fotos.length}</div>
         </div>
 
-        <div class="prop-head">
-          <div class="prop-head-left">
-            <div class="prop-title-big">${escapeHtml(imv.titulo || "(Sem título)")}</div>
-            <div class="prop-loc-big">📍 ${escapeHtml(imv.local?.bairro || "-")}, ${escapeHtml(imv.local?.cidade || "-")} - ${(imv.local?.uf || "-").toUpperCase()}</div>
+        <div class="g-thumbs" id="gThumbs">
+          ${currentGallery.thumbs
+            .map(
+              (u, i) => `
+            <button type="button" class="${i === 0 ? "active" : ""}" data-i="${i}" aria-label="Miniatura ${i + 1}">
+              <img alt="Miniatura ${i + 1}" src="${u}">
+            </button>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
 
-            <div class="prop-tags">
-              <span class="badge tipo">${TIPOS_LABEL[imv.tipo] || imv.tipo}</span>
-              <span class="badge ${statusBadgeClass(imv.status)}">${STATUS_LABEL[imv.status] || imv.status}</span>
-            </div>
-          </div>
+      <div class="prop-head">
+        <div class="prop-head-left">
+          <div class="prop-title-big">${escapeHtml(imv.titulo || "(Sem título)")}</div>
+          <div class="prop-loc-big">📍 ${escapeHtml(imv.local?.bairro || "-")}, ${escapeHtml(imv.local?.cidade || "-")} - ${(imv.local?.uf || "-").toUpperCase()}</div>
 
-          <div class="prop-head-right">
-            <div class="prop-price-big">${moneyBRL(imv.precoTotal)}</div>
-            <div class="prop-area-lines">
-              <div>${imv.areaConstruida ? `Área construída: <b>${numBR(imv.areaConstruida)}</b>` : `Área construída: <b>-</b>`}</div>
-              <div>${imv.areaTotal ? `Área total: <b>${numBR(imv.areaTotal)}</b>` : `Área total: <b>-</b>`}</div>
-            </div>
+          <div class="prop-tags">
+            <span class="badge tipo">${TIPOS_LABEL[imv.tipo] || imv.tipo}</span>
+            <span class="badge ${statusBadgeClass(imv.status)}">${STATUS_LABEL[imv.status] || imv.status}</span>
           </div>
         </div>
 
-        <div class="modal-actions-row modal-actions-wide">
-          <a class="btn btn-success action-wide" href="${SOCIAL.whatsapp}" target="_blank" rel="noopener">WhatsApp</a>
-          <a class="btn btn-soft action-wide" href="${SOCIAL.instagram}" target="_blank" rel="noopener">Instagram</a>
-        </div>
-
-        <div class="section-title">Estrutura do Imóvel</div>
-        <div class="info-cards info-cards-icons">
-          ${estruturaCardsIcons(imv.estrutura)}
-        </div>
-
-        <div style="margin-top:12px;">
-          <div class="section-title">Descrição</div>
-          <div class="desc-box">${escapeHtml(imv.descricao || "Sem descrição.")}</div>
-        </div>
-
-        <div style="margin-top:12px;">
-          <div class="section-title">Localização</div>
-          <div class="subtle">Mostrando apenas cidade/UF (sem endereço exato).</div>
-          <div class="map-wrap">
-            <iframe title="Mapa" src="${mapSrc}" loading="lazy"></iframe>
+        <div class="prop-head-right">
+          <div class="prop-price-big">${moneyBRL(imv.precoTotal)}</div>
+          <div class="prop-area-lines">
+            <div>${imv.areaConstruida ? `Área construída: <b>${numBR(imv.areaConstruida)}</b>` : `Área construída: <b>-</b>`}</div>
+            <div>${imv.areaTotal ? `Área total: <b>${numBR(imv.areaTotal)}</b>` : `Área total: <b>-</b>`}</div>
           </div>
         </div>
       </div>
-    `;
 
-    bindGalleryHandlers();
-    propOverlay.classList.add("open");
-    propOverlay.setAttribute("aria-hidden", "false");
-  }
+      <div class="modal-actions-row modal-actions-wide">
+        <a class="btn btn-success action-wide" href="${SOCIAL.whatsapp}" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn-soft action-wide" href="${SOCIAL.instagram}" target="_blank" rel="noopener">Instagram</a>
+      </div>
 
-  function closePropModal() {
-    propOverlay.classList.remove("open");
-    propOverlay.setAttribute("aria-hidden", "true");
-    propBody.innerHTML = "";
+      <div class="section-title">Estrutura do Imóvel</div>
+      <div class="info-cards info-cards-icons">
+        ${estruturaCardsIcons(imv.estrutura)}
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="section-title">Descrição</div>
+        <div class="desc-box">${escapeHtml(imv.descricao || "Sem descrição.")}</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="section-title">Localização</div>
+        <div class="subtle">Mostrando apenas cidade/UF (sem endereço exato).</div>
+        <div class="map-wrap">
+          <iframe title="Mapa" src="${mapSrc}" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  `;
+
+  bindGalleryHandlers();
+  propOverlay.classList.add("open");
+  propOverlay.setAttribute("aria-hidden", "false");
+}
+
+
+function closePropModal() {
+  propOverlay.classList.remove("open");
+  propOverlay.setAttribute("aria-hidden", "true");
+  propBody.innerHTML = "";
+
+  // 🔥 REMOVE O ID DA URL
+  if (window.removeParam) {
+    window.removeParam("imovel");
   }
+}
 
   // ✅ listeners (agora com preço)
   ["input", "change"].forEach((evt) => {
@@ -1428,11 +1440,20 @@ function initVitrine() {
     if (btn) closePropModal();
   });
 
-  (async () => {
-    cacheLista = await carregarImoveis();
-    renderCards();
-  })();
-}
+ (async () => {
+  cacheLista = await carregarImoveis();
+  renderCards();
+
+  // 🔥 VERIFICA SE TEM IMOVEL NA URL
+  const idFromUrl = window.getParam ? window.getParam("imovel") : null;
+
+  if (idFromUrl) {
+    const imv = cacheLista.find((x) => x.id === idFromUrl);
+    if (imv) {
+      openPropModal(imv);
+    }
+  }
+})();
 
 
   /* -----------------------------
